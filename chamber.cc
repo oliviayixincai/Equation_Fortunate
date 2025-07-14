@@ -35,6 +35,11 @@ export class LargeChamber: public Chamber {
     friend Chamber *makeLarge (int n);
 };
 
+export class WholeFloor: public Chamber {
+    char content[80][25];
+    friend istream &operator>>(istream &in, WholeFloor &floor);
+}
+
 Chamber *makeSmall (int n);
 
 Chamber *makeMed (int n);
