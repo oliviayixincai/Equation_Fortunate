@@ -1,38 +1,49 @@
 export module Character;
-import <string>
+import <string>;
 
 export class Character {
 protected:
     Position pos;
     int hp;
-    int attack;
-    int defense;
-    std::string race;
+    int atk;
+    int def;
+    char race;
 public:
-    Character(int x, int y, int hp, int attack, int defense, const std::string& race)
-        : x{x}, y{y}, hp{hp}, attack{attack}, defense{defense}, race{race} {}
-    virtual ~Character();
+    Character() = default;
+    virtual ~Character() = 0;
+    Position getPosition() const {return pos;}
+    int getHP() const {return hp;}
+    int getAtk() const {return atk;}
+    int getDef() const {return defense;}
+    char getRace() const {return race;}
 
-    int getX() const { 
-        return x; 
-    }
-    int getY() const { 
-        return y; 
-    }
-    int getHP() const { 
-        return hp; 
-    }
-    int getAttack() const { 
-        return attack; 
-    }
-    int getDefense() const { 
-        return defense; 
-    }
-    std::string getRace() const {
-        return race; 
-    }
-
-    virtual void setPosition();
-    virtual void update_hp();
-    virtual void attack();
+    virtual void death();
+    virtual void useItem(Item &used);
+    virtual void heal(int hp);
+    virtual void attack(Character &onWho);
+    virtual int attacked(Character &byWho);
+    virtual void move(int direction);
 };
+
+class PlayerCharacter: public Character {
+    int gold;
+public:
+    PlayerCharacter();
+    void newFloor;
+    void death();
+    void useItem(Item &used);
+    void heal(int hp);
+    void attack(Character &onWho);
+    int attacked(Character &byWho);
+    void move(int direction);
+};
+
+class Enemy: public Character {
+    PlayerCharacter &thePlayer;
+public:
+    void death();
+    void heal(int hp);
+    void attack(Character &onWho);
+    int attacked(Character &byWho);
+    void move(int direction);
+}
