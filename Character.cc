@@ -1,4 +1,5 @@
 export module Character;
+import game;
 import <string>;
 
 export class Character {
@@ -13,8 +14,8 @@ public:
     virtual ~Character() = 0;
     Position getPosition() const {return pos;}
     int getHP() const {return hp;}
-    int getAtk() const {return atk;}
-    int getDef() const {return defense;}
+    virtual int getAtk() const {return atk;}
+    virtual int getDef() const {return defense;}
     char getRace() const {return race;}
 
     virtual void death();
@@ -26,9 +27,13 @@ public:
 };
 
 class PlayerCharacter: public Character {
+protected:
     int gold;
+    int maxHp;
+    Game *theGame;
 public:
-    PlayerCharacter();
+    virtual PlayerCharacter *remove();
+    PlayerCharacter(Game *theGame);
     void newFloor;
     void death();
     void useItem(Item &used);
@@ -40,6 +45,7 @@ public:
 
 class Enemy: public Character {
     PlayerCharacter &thePlayer;
+    bool isFrozen;
 public:
     void death();
     void heal(int hp);
