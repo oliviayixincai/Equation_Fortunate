@@ -1,11 +1,5 @@
 module position;
 
-int Position::getX() {
-    return x;
-}
-int Position::getY() {
-    return y;
-}
 Position Position::moveX (int x) {
     this.x += x;
     return *this;
@@ -22,4 +16,7 @@ std::strong_ordering Position::operator<=>(Position &other) {
     } else {
         return yDiff;
     }
+}
+bool Position::near(Position &other) {
+    return this.x - other.x =< 1 && this.x - other.x >= -1 && this.y - other.y =< 1 && this.y - other.y >= -1
 }

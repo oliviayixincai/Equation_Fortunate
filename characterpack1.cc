@@ -1,21 +1,27 @@
 import character;
+export module charpack1;
+
+export class Drow: public PlayerCharacter {
+public:
+    Drow(Game *theGame);
+}
 
 export class Vampire: public PlayerCharacter {
 public:
-    Vampire();
-    void attack(Character &on Who) override;
+    Vampire(Game *theGame);
+    void attack(Character &onWho) override;
     void heal(int hp) override;
 };
 
 export class Troll: public PlayerCharacter {
 public:
-    Troll();
+    Troll(Game *theGame);
     void move(int direction) override;
 };
 
 export class Goblin: public PlayerCharacter {
 public:
-    Goblin();
+    Goblin(Game *theGame);
     void attack() override;
 };
 
@@ -27,20 +33,20 @@ public:
 
 export class Dwarf: public Enemy {
 public:
-    Dwarf()
+    Dwarf();
     int attacked(Character &byWho) override;
 };
 
 export class Elf: public Enemy {
 public:
-    Elf()
-    void attack() override;
+    Elf();
+    void attack(Character &onWho) override;
 };
 
 export class Orc: public Enemy {
 public:
     Orc();
-    void attack() override;
+    void attack(Character &onWho) override;
 };
 
 export class Merchant: public Enemy {
