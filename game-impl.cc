@@ -98,6 +98,7 @@ void Game::start() {
         }
     }
     
+    
     if (floorComplete && !over) {
         nextFloor();
     }

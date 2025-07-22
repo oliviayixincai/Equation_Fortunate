@@ -23,6 +23,10 @@ virtual void PlayerCharacter::death() {
     game->gameOver();
 }
 
+virtual PlayerCharacter *remove() {
+    return this;
+}
+
 virtual void PlayerCharacter::useItem(Item &used) {
     gold += used.getValue();
     used.use();
@@ -40,12 +44,12 @@ void Enemy::death() {
     theChamber->removeEnemy(this);
 }
 
-void move() {
+virtual void Enemy::move() {
     vector<int> v;
     for (int i = 1; i <= 8; i++) {
         if(theChamber->atPosition(pos+i) == '.') {
             v.push_back(i);
         }
     }
-    
+    pos += (v.at(prng(v.size())));
 }
