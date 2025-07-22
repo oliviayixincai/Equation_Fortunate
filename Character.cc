@@ -1,4 +1,6 @@
-export module Character;
+
+export module character;
+import game;
 import <string>;
 import position;
 import item;
@@ -19,51 +21,39 @@ public:
     Position getPosition() const {return pos;}
     int getHP() const {return hp;}
     virtual int getAtk() const {return atk;}
-    virtual int getDef() const {return def;} // Fixed: was 'defense'
+
+    virtual int getDef() const {return def;}
     char getRace() const {return race;}
 
-    virtual void death();
-    virtual void useItem(Item &used);
-    virtual void heal(int hp);
+    virtual void death() = 0;
+    virtual void useItem(Item &used) = 0;
+    virtual void heal(int hp) = 0;
     virtual void attack(Character &onWho);
     virtual int attacked(Character &byWho);
-    virtual void move(int direction);
+    virtual void move(int direction) = 0;
 };
 
 export class PlayerCharacter: public Character {
 protected:
-    int gold;
+    int gold = 0;
     int maxHp;
     Game *theGame;
 public:
     virtual PlayerCharacter *remove();
     PlayerCharacter(Game *theGame);
-    void newFloor(); // Fixed: was missing parentheses
-    void death() override;
-    void useItem(Item &used) override;
-    void heal(int hp) override;
-    void attack(Character &onWho) override;
-    int attacked(Character &byWho) override;
-    void move(int direction) override;
-    
-    // Additional methods for game integration
-    int getGold() const;
-    void addGold(int amount);
-    int getMaxHP() const;
+
+    void newFloor;
+    void death();
+    void useItem(Item &used);
+    void heal(int hp);
+    void move(int direction);
 };
 
-export class Enemy: public Character {
-    PlayerCharacter &thePlayer;
-    bool isFrozen;
+class Enemy: public Character {
+    int code;
+    Chamber *theChamber;
+    static bool isFrozen = false;
 public:
-    Enemy(PlayerCharacter &player); // Added constructor
     void death() override;
-    void heal(int hp) override;
-    void attack(Character &onWho) override;
-    int attacked(Character &byWho) override;
-    void move(int direction) override;
-    
-    // Enemy-specific methods
-    bool isEnemyFrozen() const;
-    void setFrozen(bool frozen);
-}; // Fixed: missing semicolon
+    void move(int direction);
+}

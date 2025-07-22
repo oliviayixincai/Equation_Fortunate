@@ -8,10 +8,11 @@ export class Chamber {
     unsigned int capacity;
     unsigned int space;
     bool containsPlayer;
-    Enemy *enemies[MAX_ENEMIES];
+    vector<Enemy> enemies;
     int nofe;
-    Item *items[MAX_ITEM];
+    vector<Item> items;
     int nofi;
+    vector<string> content;
     public:
     void addItem (Position p);
     void addEnemy (Position p);
@@ -20,23 +21,23 @@ export class Chamber {
 };
 
 export class SmallChamber: public Chamber {
-    char content[15][6];
+    //15 * 6
     friend Chamber *makeSmall (int n);
 
 };
 
 export class MedChamber: public Chamber {
-    char content[20][8];
+     //20 * 8
     friend Chamber *makeMed (int n);
 };
 
 export class LargeChamber: public Chamber {
-    char content[30][15];
+    // 30 * 15
     friend Chamber *makeLarge (int n);
 };
 
 export class WholeFloor: public Chamber {
-    char content[80][25];
+    // 80 * 25
     friend istream &operator>>(istream &in, WholeFloor &floor);
 }
 
