@@ -20,7 +20,7 @@ virtual int Character::attacked(Character &byWho) { //Damage(Def ender) = ceilin
 
 PlayerCharacter::PlayerCharacter(Game *theGame): pos{0, 0}, hp{125}, maxHp{125}, atk{25}, def{25}, theGame{theGame}, rece{'s'} {}
 virtual void PlayerCharacter::death() {
-    game->gameover();
+    game->gameOver();
 }
 
 virtual PlayerCharacter *remove() {

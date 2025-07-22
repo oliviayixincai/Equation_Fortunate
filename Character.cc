@@ -1,6 +1,12 @@
+
 export module character;
 import game;
 import <string>;
+import position;
+import item;
+
+// Forward declaration to avoid circular dependency
+export class Game;
 
 export class Character {
 protected:
@@ -15,6 +21,7 @@ public:
     Position getPosition() const {return pos;}
     int getHP() const {return hp;}
     virtual int getAtk() const {return atk;}
+
     virtual int getDef() const {return def;}
     char getRace() const {return race;}
     void set(Position p) {pos = p};
@@ -27,7 +34,7 @@ public:
     virtual void move(int direction) = 0;
 };
 
-class PlayerCharacter: public Character {
+export class PlayerCharacter: public Character {
 protected:
     int gold = 0;
     int maxHp;
@@ -36,6 +43,7 @@ public:
     virtual PlayerCharacter *remove();
     PlayerCharacter(Game *theGame);
     void newFloor();
+
     void death();
     void useItem(Item &used);
     void heal(int hp);
