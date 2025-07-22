@@ -1,6 +1,10 @@
 export module Character;
-import game;
 import <string>;
+import position;
+import item;
+
+// Forward declaration to avoid circular dependency
+export class Game;
 
 export class Character {
 protected:
@@ -15,7 +19,7 @@ public:
     Position getPosition() const {return pos;}
     int getHP() const {return hp;}
     virtual int getAtk() const {return atk;}
-    virtual int getDef() const {return defense;}
+    virtual int getDef() const {return def;} // Fixed: was 'defense'
     char getRace() const {return race;}
 
     virtual void death();
@@ -26,7 +30,7 @@ public:
     virtual void move(int direction);
 };
 
-class PlayerCharacter: public Character {
+export class PlayerCharacter: public Character {
 protected:
     int gold;
     int maxHp;
@@ -34,22 +38,32 @@ protected:
 public:
     virtual PlayerCharacter *remove();
     PlayerCharacter(Game *theGame);
-    void newFloor;
-    void death();
-    void useItem(Item &used);
-    void heal(int hp);
-    void attack(Character &onWho);
-    int attacked(Character &byWho);
-    void move(int direction);
+    void newFloor(); // Fixed: was missing parentheses
+    void death() override;
+    void useItem(Item &used) override;
+    void heal(int hp) override;
+    void attack(Character &onWho) override;
+    int attacked(Character &byWho) override;
+    void move(int direction) override;
+    
+    // Additional methods for game integration
+    int getGold() const;
+    void addGold(int amount);
+    int getMaxHP() const;
 };
 
-class Enemy: public Character {
+export class Enemy: public Character {
     PlayerCharacter &thePlayer;
     bool isFrozen;
 public:
-    void death();
-    void heal(int hp);
-    void attack(Character &onWho);
-    int attacked(Character &byWho);
-    void move(int direction);
-}
+    Enemy(PlayerCharacter &player); // Added constructor
+    void death() override;
+    void heal(int hp) override;
+    void attack(Character &onWho) override;
+    int attacked(Character &byWho) override;
+    void move(int direction) override;
+    
+    // Enemy-specific methods
+    bool isEnemyFrozen() const;
+    void setFrozen(bool frozen);
+}; // Fixed: missing semicolon

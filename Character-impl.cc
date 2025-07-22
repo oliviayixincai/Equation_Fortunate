@@ -6,7 +6,7 @@ inline int min(int a, int b) {
 
 PlayerCharacter::PlayerCharacter(Game *theGame): pos{0, 0}, hp{125}, maxHp{125}, atk{25}, def{25}, theGame{theGame}, rece{'s'} {}
 virtual void PlayerCharacter::death() {
-    game->gameover();
+    game->gameOver();
 }
 
 virtual void PlayerCharacter::useItem(Item &used) {
