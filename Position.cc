@@ -7,4 +7,7 @@ export struct Position {
     Position moveX (int x);
     Position moveY (int y);
     std::strong_ordering operator<=>(Position &other);
-}
+    bool near(Position &other);
+    Position &operator+=(int n);
+    Position &operator+(int n);
+};

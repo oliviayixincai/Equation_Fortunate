@@ -1,4 +1,4 @@
-export module Character;
+export module character;
 import game;
 import <string>;
 
@@ -15,20 +15,20 @@ public:
     Position getPosition() const {return pos;}
     int getHP() const {return hp;}
     virtual int getAtk() const {return atk;}
-    virtual int getDef() const {return defense;}
+    virtual int getDef() const {return def;}
     char getRace() const {return race;}
 
-    virtual void death();
-    virtual void useItem(Item &used);
-    virtual void heal(int hp);
+    virtual void death() = 0;
+    virtual void useItem(Item &used) = 0;
+    virtual void heal(int hp) = 0;
     virtual void attack(Character &onWho);
     virtual int attacked(Character &byWho);
-    virtual void move(int direction);
+    virtual void move(int direction) = 0;
 };
 
 class PlayerCharacter: public Character {
 protected:
-    int gold;
+    int gold = 0;
     int maxHp;
     Game *theGame;
 public:
@@ -38,18 +38,14 @@ public:
     void death();
     void useItem(Item &used);
     void heal(int hp);
-    void attack(Character &onWho);
-    int attacked(Character &byWho);
     void move(int direction);
 };
 
 class Enemy: public Character {
-    PlayerCharacter &thePlayer;
-    bool isFrozen;
+    int code;
+    Chamber *theChamber;
+    static bool isFrozen = false;
 public:
-    void death();
-    void heal(int hp);
-    void attack(Character &onWho);
-    int attacked(Character &byWho);
+    void death() override;
     void move(int direction);
 }

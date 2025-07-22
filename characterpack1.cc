@@ -27,45 +27,45 @@ public:
 
 export class Human: public Enemy {
 public:
-    Human();
+    Human(Chamber *theChamber);
     void death() override;
 };
 
 export class Dwarf: public Enemy {
 public:
-    Dwarf();
+    Dwarf(Chamber *theChamber);
     int attacked(Character &byWho) override;
 };
 
 export class Elf: public Enemy {
 public:
-    Elf();
+    Elf(Chamber *theChamber);
     void attack(Character &onWho) override;
 };
 
 export class Orc: public Enemy {
 public:
-    Orc();
+    Orc(Chamber *theChamber);
     void attack(Character &onWho) override;
 };
 
 export class Merchant: public Enemy {
     static bool isHostile = false;
 public:
-    Merchant();
+    Merchant(Chamber *theChamber);
     int attacked(Character &byWho) override;
     void death() override;
 };
 
 export class Dragon: public Enemy {
     friend class DragonHoard;
-    Dragon();
+    Dragon(Chamber *theChamber);
 public:
     void death() override;
 };
 
 export class Halfling: public Enemy {
 public:
-    Halfling();
+    Halfling(Chamber *theChamber);
     int attacked() override;
 };
