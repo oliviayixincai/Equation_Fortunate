@@ -51,6 +51,7 @@ public:
 
 export class Merchant: public Enemy {
     static bool isHostile = false;
+    bool sold = false;
 public:
     Merchant(Chamber *theChamber);
     int attacked(Character &byWho) override;
@@ -58,6 +59,7 @@ public:
 };
 
 export class Dragon: public Enemy {
+    Observer *treasure;
     friend class DragonHoard;
     Dragon(Chamber *theChamber);
 public:

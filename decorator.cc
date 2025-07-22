@@ -15,4 +15,4 @@ public:
     PlayerCharacter *remove() override;
     int getAtk() override;
     int getDef() override;
-}
+};

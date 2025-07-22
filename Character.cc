@@ -17,6 +17,7 @@ public:
     virtual int getAtk() const {return atk;}
     virtual int getDef() const {return def;}
     char getRace() const {return race;}
+    void set(Position p) {pos = p};
 
     virtual void death() = 0;
     virtual void useItem(Item &used) = 0;
@@ -34,7 +35,7 @@ protected:
 public:
     virtual PlayerCharacter *remove();
     PlayerCharacter(Game *theGame);
-    void newFloor;
+    void newFloor();
     void death();
     void useItem(Item &used);
     void heal(int hp);
@@ -44,8 +45,7 @@ public:
 class Enemy: public Character {
     int code;
     Chamber *theChamber;
-    static bool isFrozen = false;
 public:
-    void death() override;
-    void move(int direction);
+    virtual void death();
+    virtual void move();
 }

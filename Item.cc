@@ -4,35 +4,46 @@ import position;
 struct info {
     int atk;
     int def;
-}
+};
 
 export class Item {
     protected:
     Position pos;
     Game *theGame
+    Chamber *theChamber;
 
     public:
     virtual void use() = 0;
-    void set(Position p) {pos = p;}
-}
+    virtual void set(Position p) {pos = p;}
+    virtual int getValue();
+};
 
 export class Gold: public Item {
     int value;
     public:
-    Gold(int value, Game *theGame);
+    int getValue() override;
+    Gold(int value, Game *theGame, Chamber *theChamber);
+    virtual void use() override;
+};
+
+export class DragonHoard: public Gold {
+    Dragon *theDragon;
+    bool available = false;
+    public:
+    DragonHoard(int value, Game *theGame, Chamber *theChamber);
     void use() override;
 }
 
 export class Potion: public Item {
-    Effect effect;
+    info effect;
     int heal;
     public:
-    Potion(Effect effect, int heal, Game *theGame);
+    Potion(info effect, int heal, Game *theGame, Chamber *theChamber);
     void use() override;
-}
+};
 
 export class Stair: public Item {
     public:
     Stair(Game *theGame);
     void use() override;
-}
+};
