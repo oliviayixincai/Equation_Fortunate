@@ -7,6 +7,7 @@ struct info {
 }
 
 export class Item {
+
     protected:
     Position pos;
     Game *theGame

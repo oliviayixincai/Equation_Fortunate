@@ -18,6 +18,7 @@ export class Game {
     bool enemiesFrozen;
     Observer *observer; // For display/UI updates
     std::string floorFile; // Optional floor file for command line
+    std::string playerName; // Player's chosen name
 
 public:
     Game();
@@ -37,6 +38,9 @@ public:
     // Player management
     void createPlayer(char raceChar);
     PlayerCharacter* getPlayer() const;
+    void promptForPlayerName(); // New method for name input
+    void setPlayerName(const std::string& name);
+    std::string getPlayerName() const;
     
     // Floor management
     void initializeFloor();
