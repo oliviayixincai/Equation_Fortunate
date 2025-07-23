@@ -6,13 +6,14 @@ import <sstream>;
 import character; // Using teammate's module
 import Floor;
 import observer;
+import charpack1
 // TODO: Need charpack1 module for race classes - teammate to implement
 
 // Direction mapping for movement commands
-static const std::vector<std::string> DIRECTIONS = {"nw", "no", "ne", "we", "", "ea", "sw", "so", "se"};
+static const std::vector<std::string> DIRECTIONS = {"", "nw", "no", "ne", "we", "ea", "sw", "so", "se"};
 
 Game::Game() : floorNum(1), currentFloor(nullptr), player(nullptr), over(false), enemiesFrozen(false), observer(nullptr), floorFile(""), playerName("") {
-    // TODO: Initialize PRNG with default seed (need teammate to implement PRNG)
+    // seeding is done in main
     
     // Create text display observer
     observer = new TextDisplay();
@@ -21,7 +22,7 @@ Game::Game() : floorNum(1), currentFloor(nullptr), player(nullptr), over(false),
 }
 
 Game::Game(const std::string& floorFile) : floorNum(1), currentFloor(nullptr), player(nullptr), over(false), enemiesFrozen(false), observer(nullptr), floorFile(floorFile), playerName("") {
-    // TODO: Initialize PRNG with default seed (need teammate to implement PRNG)
+    // seeding is done in main
     
     // Create text display observer
     observer = new TextDisplay();
@@ -204,53 +205,10 @@ bool Game::processPlayerTurn(const std::string& cmd) {
 }
 
 bool Game::attemptPlayerMove(int direction) {
-    if (!player || !currentFloor) return false;
-    
-    // TODO: Get player's current position (need teammate to implement PlayerCharacter::getPosition())
-    // Position currentPos = player->getPosition();
-    // Position newPos = calculateNewPosition(currentPos, direction);
-    
-    // TODO: Check if move is valid (need teammate to implement Position operations)
-    // if (!currentFloor->isValidPosition(newPos) || !currentFloor->isFloorTile(newPos)) {
-    //     if (observer) {
-    //         observer->displayMessage("You can't move there!");
-    //     }
-    //     return false;
-    // }
-    
-    // TODO: Check for character collision (need Character system)
-    // Character* occupant = currentFloor->getCharacterAt(newPos);
-    // if (occupant) {
-    //     if (observer) {
-    //         observer->displayMessage("There's someone in the way!");
-    //     }
-    //     return false;
-    // }
-    
-    // TODO: Actually move the player (need teammate's PlayerCharacter::move() and Position::set())
-    // bool moveSuccess = currentFloor->moveCharacter(player, newPos);
-    // if (moveSuccess) {
-    //     // Check if player stepped on an item
-    //     Item* item = currentFloor->getItemAt(newPos);
-    //     if (item) {
-    //         // TODO: Auto-pickup gold, show potion info (need Item system)
-    //         // if (Gold* gold = dynamic_cast<Gold*>(item)) {
-    //         //     player->useItem(*gold); // Auto-pickup
-    //         //     currentFloor->removeItem(gold);
-    //         // }
-    //     }
-    //     
-    //     if (observer) {
-    //         observer->displayMessage(playerName + " moves " + DIRECTIONS[direction]);
-    //     }
-    //     return true;
-    // }
-    
-    // Placeholder implementation
-    if (observer) {
-        observer->displayMessage(playerName + " moves " + DIRECTIONS[direction] + " (TODO: need Position/Character system)");
-    }
-    return true; // Temporary - assume move succeeds for turn advancement
+    Position current = player->getPosition;
+    Position attept = player->getPosition + direction;
+    if (currentFloor->atPosition(attempt) == )
+
 }
 
 bool Game::attemptPlayerAttack(int direction) {

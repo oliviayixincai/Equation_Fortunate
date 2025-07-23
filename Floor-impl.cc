@@ -150,34 +150,46 @@ void Floor::addItem(Item* item) {
 }
 
 void Floor::removeEnemy(Enemy* enemy) {
-    auto it = std::find(enemies.begin(), enemies.end(), enemy);
-    if (it != enemies.end()) {
-        // TODO: Remove from character grid when getPosition() is available
-        // Position pos = enemy->getPosition();
-        // if (isValidPosition(pos)) {
-        //     characterGrid[pos.y][pos.x] = nullptr;
-        // }
-        
+    Position pos = enemy->getPos();
+    for (auto &it : enemies) {
+    if (&it == enemy) {
+        map[pos.y][pos.x] = '.'
         enemies.erase(it);
-        delete enemy;
-        notifyObserver();
+        return;
+    }
     }
 }
 
 void Floor::removeItem(Item* item) {
-    auto it = std::find(items.begin(), items.end(), item);
-    if (it != items.end()) {
-        // TODO: Remove from item grid when getPosition() is available
-        // Position pos = item->getPosition();
-        // if (isValidPosition(pos)) {
-        //     itemGrid[pos.y][pos.x] = nullptr;
-        // }
-        
-        items.erase(it);
-        delete item;
-        notifyObserver();
+    Position pos = item->getPos();
+    for (auto &it : item) {
+    if (&it == enemy) {
+        map[pos.y][pos.x] = '.'
+        enemies.erase(it);
+        return;
+    }
     }
 }
+
+// ---------------------
+
+char atPosition(Position pos) {
+    if (!isValidPosition(pos)) {
+        return ' ';
+    } else {
+        char cell = map[pos.y][pos.x];
+        return cell;
+    }
+}
+
+void update(Position pos1, Position pos2) {
+    char char1 = atPosition(pos1);
+    char char2 = atPosition(pos2);
+    map[pos1.y][pos1.x] = char2;
+    map[pos2.y][pos2.x] = char1;
+}
+
+// ----------------------
 
 bool Floor::isValidPosition(const Position& pos) const {
     return pos.x >= 0 && pos.x < FLOOR_WIDTH && pos.y >= 0 && pos.y < FLOOR_HEIGHT;
@@ -207,57 +219,22 @@ bool Floor::isPassage(const Position& pos) const {
     return cell == '#';
 }
 
-Character* Floor::getCharacterAt(const Position& pos) const {
-    if (!isValidPosition(pos)) return nullptr;
-    return characterGrid[pos.y][pos.x];
-}
-
-Item* Floor::getItemAt(const Position& pos) const {
-    if (!isValidPosition(pos)) return nullptr;
-    return itemGrid[pos.y][pos.x];
-}
-
-std::vector<Enemy*> Floor::getAdjacentEnemies(const Position& pos) const {
-    std::vector<Enemy*> adjacent;
-    
-    // Check all 8 adjacent positions
-    for (int dy = -1; dy <= 1; ++dy) {
-        for (int dx = -1; dx <= 1; ++dx) {
-            if (dx == 0 && dy == 0) continue; // Skip center position
-            
-            Position adjPos(pos.x + dx, pos.y + dy);
-            Character* character = getCharacterAt(adjPos);
-            
-            // TODO: Need to check if character is an Enemy (need dynamic_cast or Enemy identification)
-            // For now, check if it's not the player
-            if (character && character != player) {
-                // Assume it's an enemy for now
-                Enemy* enemy = static_cast<Enemy*>(character);
-                adjacent.push_back(enemy);
-            }
+Item &Floor::getItemAt(const Position& pos) const {
+    for (auto &n : items) {
+        if (n->getPos == pos) {
+            return n;
         }
     }
-    
-    return adjacent;
+    return ITEM_NOTHING;
 }
 
-std::vector<Item*> Floor::getAdjacentItems(const Position& pos) const {
-    std::vector<Item*> adjacent;
-    
-    // Check all 8 adjacent positions
-    for (int dy = -1; dy <= 1; ++dy) {
-        for (int dx = -1; dx <= 1; ++dx) {
-            if (dx == 0 && dy == 0) continue; // Skip center position
-            
-            Position adjPos(pos.x + dx, pos.y + dy);
-            Item* item = getItemAt(adjPos);
-            if (item) {
-                adjacent.push_back(item);
-            }
+Character &Floor::getEnemyAt(const Position &pos) const {
+    for (auto &n : enemies) {
+        if (n->getPos == pos) {
+            return n;
         }
     }
-    
-    return adjacent;
+    return ENEMY_NOTHING;
 }
 
 bool Floor::moveCharacter(Character* character, const Position& newPos) {
@@ -269,7 +246,7 @@ bool Floor::moveCharacter(Character* character, const Position& newPos) {
     }
     
     // Check if there's already a character at the new position
-    if (getCharacterAt(newPos) != nullptr) {
+    if (atPosition(newPos) != nullptr) {
         return false; // Position occupied
     }
     
@@ -286,17 +263,6 @@ bool Floor::moveCharacter(Character* character, const Position& newPos) {
     
     notifyObserver();
     return true;
-}
-
-void Floor::updateEnemies(bool frozen) {
-    if (frozen) return; // Enemies are frozen
-    
-    // TODO: Move each enemy when Enemy::move() is implemented by teammate
-    for (Enemy* enemy : enemies) {
-        // enemy->move();
-    }
-    
-    notifyObserver();
 }
 
 void Floor::processPlayerAction() {
@@ -323,7 +289,7 @@ char Floor::getDisplayChar(const Position& pos) const {
     if (!isValidPosition(pos)) return ' ';
     
     // Priority: Characters > Items > Floor
-    Character* character = getCharacterAt(pos);
+    char character = atPosition(pos);
     if (character) {
         if (character == player) {
             return '@';

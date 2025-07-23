@@ -8,6 +8,10 @@ import item;
 // Forward declaration to avoid circular dependency
 export class Game;
 
+class Floor{
+    void award(int n = 0);
+};
+
 export class Character {
 protected:
     Position pos;
@@ -21,7 +25,6 @@ public:
     Position getPosition() const {return pos;}
     int getHP() const {return hp;}
     virtual int getAtk() const {return atk;}
-
     virtual int getDef() const {return def;}
     char getRace() const {return race;}
     void set(Position p) {pos = p};
@@ -32,6 +35,9 @@ public:
     virtual void attack(Character &onWho);
     virtual int attacked(Character &byWho);
     virtual void move(int direction) = 0;
+
+    std::strong_ordering operator<=>(Character &other);
+}
 };
 
 export class PlayerCharacter: public Character {
@@ -43,17 +49,18 @@ public:
     virtual PlayerCharacter *remove();
     PlayerCharacter(Game *theGame);
     void newFloor();
-
+    void gainGold(int n) {gold += n;}
     void death();
     void useItem(Item &used);
     void heal(int hp);
     void move(int direction);
 };
 
-class Enemy: public Character {
+export class Enemy: public Character {
     int code;
-    Chamber *theChamber;
+    Floor *theFloor;
 public:
     virtual void death();
     virtual void move();
-}
+    virtual void attack(Character &onWho) override;
+};

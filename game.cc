@@ -3,6 +3,9 @@ import <string>;
 import <vector>;
 import <memory>;
 
+// Random number generator
+PRNG prng;
+
 // Forward declarations for circular dependency resolution
 export class Game;
 
@@ -18,6 +21,7 @@ export class Game {
     PlayerCharacter *player;
     bool over;
     bool enemiesFrozen;
+    string message = "";
     Observer *observer; // For display/UI updates
     std::string floorFile; // Optional floor file for command line
     std::string playerName; // Player's chosen name
@@ -67,4 +71,6 @@ public:
     // Utility methods for command processing
     int directionToInt(const std::string& dir);
     bool isValidDirection(const std::string& dir);
+
+    void updateMessage(string msg) {message = msg;}
 };
