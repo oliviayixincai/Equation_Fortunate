@@ -3,8 +3,8 @@ import <string>;
 import <vector>;
 import <memory>;
 
-// Random number generator
-PRNG prng;
+// Forward declaration for PRNG
+export class PRNG;
 
 // Forward declarations for circular dependency resolution
 export class Game;
@@ -21,7 +21,7 @@ export class Game {
     PlayerCharacter *player;
     bool over;
     bool enemiesFrozen;
-    string message = "";
+    std::string message = "";
     Observer *observer; // For display/UI updates
     std::string floorFile; // Optional floor file for command line
     std::string playerName; // Player's chosen name
@@ -72,10 +72,10 @@ public:
     int directionToInt(const std::string& dir);
     bool isValidDirection(const std::string& dir);
 
-    void updateMessage(string msg) {message = msg;}
+    void updateMessage(const std::string& msg) {message = msg;}
     // Helper methods for enhanced gameplay
     void displayHelp();
     void displayFloorInfo();
-    void calculateNewPosition(int currentX, int currentY, int direction, int& newX, int& newY);
+    // REMOVED: calculateNewPosition() - using teammate's Position::operator+ instead
 };
 

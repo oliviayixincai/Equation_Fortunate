@@ -7,42 +7,13 @@ import character; // Using teammate's module
 import Floor;
 import observer;
 import charpack1
-// TODO: Need charpack1 module for race classes - teammate to implement
+// TODO: Import PRNG module when available
+// extern PRNG prng; // Global PRNG instance from teammate
 
-// Add temporary stub implementations at the top of the file for compilation
-class TemporaryPosition {
-public:
-    int x, y;
-    TemporaryPosition(int x = 0, int y = 0) : x(x), y(y) {}
-    bool operator==(const TemporaryPosition& other) const { return x == other.x && y == other.y; }
-};
+// Temporary stub classes REMOVED - now using teammate's real implementations
 
-class TemporaryPlayerCharacter {
-private:
-    TemporaryPosition pos;
-    int hp = 125;
-    int maxHp = 125;
-    int atk = 25;
-    int def = 25;
-    int gold = 0;
-    char race = 's';
-public:
-    TemporaryPlayerCharacter() : pos(40, 15) {} // Start at middle of map
-    TemporaryPosition getPosition() const { return pos; }
-    void setPosition(const TemporaryPosition& newPos) { pos = newPos; }
-    int getHP() const { return hp; }
-    int getMaxHP() const { return maxHp; }
-    int getAtk() const { return atk; }
-    int getDef() const { return def; }
-    int getGold() const { return gold; }
-    void addGold(int amount) { gold += amount; }
-    char getRace() const { return race; }
-    void setRace(char r) { race = r; }
-    void heal(int amount) { hp = std::min(hp + amount, maxHp); }
-    void takeDamage(int damage) { hp = std::max(0, hp - damage); }
-};
-
-// Direction mapping for movement commands
+// Direction mapping for movement commands (aligned with teammate's Position::operator+ numbering)
+// 0=center, 1=nw, 2=no, 3=ne, 4=we, 5=ea, 6=sw, 7=so, 8=se
 static const std::vector<std::string> DIRECTIONS = {"", "nw", "no", "ne", "we", "ea", "sw", "so", "se"};
 
 Game::Game() : floorNum(1), currentFloor(nullptr), player(nullptr), over(false), enemiesFrozen(false), observer(nullptr), floorFile(""), playerName("") {
@@ -258,57 +229,94 @@ bool Game::processPlayerTurn(const std::string& cmd) {
 }
 
 bool Game::attemptPlayerMove(int direction) {
-    Position current = player->getPosition;
-    Position attept = player->getPosition + direction;
-    if (currentFloor->atPosition(attempt) == )
-
+    if (!player || !currentFloor) return false;
+    
+    Position current = player->getPosition(); // Fix: add parentheses
+    Position attempt = current + direction;    // Fix: spelling and use current pos
+    
+    // Check if move is valid
+    char cellAtDestination = currentFloor->atPosition(attempt);
+    if (cellAtDestination == '|' || cellAtDestination == '-' || cellAtDestination == ' ') {
+        // Can't move to walls or invalid positions
+        if (observer) {
+            observer->displayMessage("You can't move there!");
+        }
+        return false;
+    }
+    
+    // Check for character collision
+    Character* occupant = currentFloor->getEnemyAt(attempt);
+    if (occupant && occupant != nullptr) {
+        if (observer) {
+            observer->displayMessage("There's someone in the way!");
+        }
+        return false;
+    }
+    
+    // Perform the move
+    currentFloor->update(current, attempt);
+    player->move(direction);
+    
+    // Check if player stepped on an item
+    Item* item = currentFloor->getItemAt(attempt);
+    if (item && item != nullptr) {
+        // Auto-pickup gold, show potion info
+        if (observer) {
+            observer->displayMessage("You found something here!");
+        }
+        // TODO: Handle different item types when fully integrated
+    }
+    
+    if (observer) {
+        observer->displayMessage(playerName + " moves " + DIRECTIONS[direction]);
+    }
+    return true;
 }
 
 bool Game::attemptPlayerAttack(int direction) {
     if (!player || !currentFloor) return false;
     
-    // TODO: Get adjacent position in attack direction (need Position system)
-    // Position playerPos = player->getPosition();
-    // Position attackPos = calculateNewPosition(playerPos, direction);
+    // Get adjacent position in attack direction using teammate's Position system
+    Position playerPos = player->getPosition();
+    Position attackPos = playerPos + direction;
     
-    // TODO: Check if there's an enemy to attack (need Character system)
-    // Character* target = currentFloor->getCharacterAt(attackPos);
-    // if (!target || target == player) {
-    //     if (observer) {
-    //         observer->displayMessage("There's nothing to attack there!");
-    //     }
-    //     return false;
-    // }
-    
-    // TODO: Execute attack (need teammate's PlayerCharacter::attack())
-    // player->attack(*target);
-    
-    // TODO: Check if enemy was killed and handle death (need Character::getHP())
-    // if (target->getHP() <= 0) {
-    //     if (observer) {
-    //         observer->displayMessage("Enemy defeated!");
-    //     }
-    //     currentFloor->removeEnemy(static_cast<Enemy*>(target));
-    // }
-    
-    // Placeholder implementation
-    if (observer) {
-        observer->displayMessage(playerName + " attacks in direction: " + DIRECTIONS[direction] + " (TODO: need Character system)");
+    // Check if there's an enemy to attack using teammate's Character system
+    Character* target = currentFloor->getEnemyAt(attackPos);
+    if (!target) {
+        if (observer) {
+            observer->displayMessage("There's nothing to attack there!");
+        }
+        return false;
     }
+    
+    // Execute attack using teammate's Character::attack() method
+    player->attack(*target);
+    
+    // Check if enemy was killed and handle death
+    if (target->getHP() <= 0) {
+        if (observer) {
+            observer->displayMessage("Enemy defeated!");
+        }
+        currentFloor->removeEnemy(static_cast<Enemy*>(target));
+    } else {
+        if (observer) {
+            observer->displayMessage(playerName + " attacks the enemy!");
+        }
+    }
+    
     return true; // Count as valid action for turn advancement
 }
 
 bool Game::attemptUsePotion(int direction) {
     if (!player || !currentFloor) return false;
     
-    // TODO: Get adjacent position for potion use (need Position system)
-    // Position playerPos = player->getPosition();
-    // Position potionPos = calculateNewPosition(playerPos, direction);
+    // Get adjacent position for potion use using teammate's Position system
+    Position playerPos = player->getPosition();
+    Position potionPos = playerPos + direction;
     
-    // TODO: Check if there's a potion there (need Item system)
-    // Item* item = currentFloor->getItemAt(potionPos);
-    // Potion* potion = dynamic_cast<Potion*>(item);
-    // if (!potion) {
+    // Check if there's a potion there using teammate's Item system
+    Item* item = currentFloor->getItemAt(potionPos);
+    if (!item) {
     //     if (observer) {
     //         observer->displayMessage("There's no potion there!");
     //     }
@@ -329,17 +337,27 @@ bool Game::attemptUsePotion(int direction) {
 void Game::processEnemyTurns() {
     if (!currentFloor || enemiesFrozen) return;
     
-    // Get all enemies and process them in order
+    // Get all enemies and process them using teammate's system
     std::vector<Enemy*>& enemies = currentFloor->getEnemies();
     
     for (Enemy* enemy : enemies) {
         if (!enemy || !player) continue;
         
-        processEnemyTurn(enemy);
+        // Use teammate's Enemy::move() method directly
+        enemy->move();
+        
+        // Check if enemy attacks player (if adjacent)
+        if (enemy->getPosition().near(player->getPosition())) {
+            enemy->attack(*player);
+            if (player->getHP() <= 0) {
+                gameOver();
+                return;
+            }
+        }
     }
     
-    // Update floor after all enemies have acted
-    currentFloor->processPlayerAction();
+    // Notify observer of changes
+    currentFloor->notifyObserver();
 }
 
 void Game::processEnemyTurn(Enemy* enemy) {
@@ -463,10 +481,15 @@ void Game::createPlayer(char raceChar) {
             return;
     }
     
-    // TODO: Create actual race-specific player (need teammate to implement race classes in charpack1)
-    // For now, create a temporary player for testing
-    player = reinterpret_cast<PlayerCharacter*>(new TemporaryPlayerCharacter());
-    static_cast<TemporaryPlayerCharacter*>(player)->setRace(raceChar);
+    // Create race-specific player using teammate's charpack1 classes
+    switch (raceChar) {
+        case 's': player = new Shade(this); break;
+        case 'd': player = new Drow(this); break;
+        case 'v': player = new Vampire(this); break;
+        case 'g': player = new Goblin(this); break;
+        case 't': player = new Troll(this); break;
+        default: player = new Shade(this); break; // Default to Shade
+    }
     
     std::string message = "⚔️  " + playerName + " the " + raceName + " has entered the dungeon!";
     if (observer) {
@@ -689,24 +712,3 @@ void Game::displayFloorInfo() {
     }
 }
 
-void Game::calculateNewPosition(int currentX, int currentY, int direction, int& newX, int& newY) {
-    // Calculate new position based on 8-directional movement
-    // Direction mapping: 0=nw, 1=no, 2=ne, 3=we, 4=center, 5=ea, 6=sw, 7=so, 8=se
-    newX = currentX;
-    newY = currentY;
-    
-    switch (direction) {
-        case 0: newX--; newY--; break; // nw
-        case 1: newY--; break;         // no (north)
-        case 2: newX++; newY--; break; // ne
-        case 3: newX--; break;         // we (west)
-        case 4: break;                 // center (no movement)
-        case 5: newX++; break;         // ea (east)
-        case 6: newX--; newY++; break; // sw
-        case 7: newY++; break;         // so (south)
-        case 8: newX++; newY++; break; // se
-        default:
-            // Invalid direction, don't move
-            break;
-    }
-}

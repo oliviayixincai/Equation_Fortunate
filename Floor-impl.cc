@@ -3,6 +3,7 @@ import <iostream>;
 import <fstream>;
 import <sstream>;
 import <algorithm>;
+import <stdexcept>;
 
 Floor::Floor(Observer* obs) : observer(obs), player(nullptr) {
     // Initialize grids for fast entity lookups
@@ -188,30 +189,29 @@ void Floor::addItem(Item* item) {
 }
 
 void Floor::removeEnemy(Enemy* enemy) {
-    Position pos = enemy->getPos();
+    Position pos = enemy->getPosition(); // Fix: use standard method name
     for (auto &it : enemies) {
-    if (&it == enemy) {
-        map[pos.y][pos.x] = '.'
-        enemies.erase(it);
-        return;
-    }
+        if (&it == enemy) {
+            map[pos.y][pos.x] = '.';
+            enemies.erase(it);
+            return;
+        }
     }
 }
 
 void Floor::removeItem(Item* item) {
-    Position pos = item->getPos();
+    Position pos = item->getPosition(); // Fix: use standard method name
     for (auto &it : item) {
-    if (&it == enemy) {
-        map[pos.y][pos.x] = '.'
-        enemies.erase(it);
-        return;
-    }
-    }
+        if (&it == enemy) {
+            map[pos.y][pos.x] = '.';
+            enemies.erase(it);
+            return;
+        }
 }
 
 // ---------------------
 
-char atPosition(Position pos) {
+char Floor::atPosition(Position pos) const {
     if (!isValidPosition(pos)) {
         return ' ';
     } else {
@@ -220,7 +220,7 @@ char atPosition(Position pos) {
     }
 }
 
-void update(Position pos1, Position pos2) {
+void Floor::update(Position pos1, Position pos2) {
     char char1 = atPosition(pos1);
     char char2 = atPosition(pos2);
     map[pos1.y][pos1.x] = char2;
@@ -268,8 +268,8 @@ Item &Floor::getItemAt(const Position& pos) const {
 
 Character &Floor::getEnemyAt(const Position &pos) const {
     for (auto &n : enemies) {
-        if (n->getPos == pos) {
-            return n;
+        if (n->getPosition() == pos) {
+            return *n;
         }
     }
     return ENEMY_NOTHING;
@@ -326,29 +326,35 @@ char Floor::getCell(int row, int col) const {
 char Floor::getDisplayChar(const Position& pos) const {
     if (!isValidPosition(pos)) return ' ';
     
-    // Priority: Characters > Items > Floor
-    char character = atPosition(pos);
-    if (character) {
-        if (character == player) {
-            return '@';
+    // Check for player first (always on top)
+    if (player && player->getPosition() == pos) {
+        return '@';
+    }
+    
+    // Check for enemies using teammate's system
+    Character* enemy = getEnemyAt(pos);
+    if (enemy) {
+        return enemy->getRace(); // Use teammate's getRace() method directly
+    }
+    
+    // Check for items using teammate's system
+    Item* item = getItemAt(pos);
+    if (item) {
+        // For now, use simple logic - teammate can enhance this
+        if (item->getValue() > 0) {
+            return 'G'; // Gold
         } else {
-            // TODO: Need Character::getRace() or display character from teammate
-            return 'E'; // Generic enemy for now
+            return 'P'; // Potion
         }
     }
     
-    Item* item = getItemAt(pos);
-    if (item) {
-        // TODO: Need Item::getSymbol() or display character from teammate
-        return '?'; // Generic item for now
-    }
-    
     // Check for stairs
-    if (pos.x == stairPosition.x && pos.y == stairPosition.y) {
+    if (pos == stairPosition) {
         return '\\';
     }
     
-    return map[pos.y][pos.x]; // Return floor tile
+    // Return the actual map character (leverages teammate's map loading)
+    return map[pos.y][pos.x];
 }
 
 void Floor::printDebugInfo() const {

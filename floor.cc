@@ -38,7 +38,7 @@ public:
     
 
     // useful functions: ( more useful than these ^)
-    char atPosition(Position pos);
+    char atPosition(Position pos) const;
     void update(Position pos1, Position pos2);
     void award(int value = 0);
 
@@ -49,11 +49,12 @@ public:
     bool isDoor(const Position& pos) const;
     bool isPassage(const Position& pos) const;
     
-    // Entity queries
-    Character* getCharacterAt(const Position& pos) const;
-    Item* getItemAt(const Position& pos) const;
+    // Entity queries  
+    Character& getEnemyAt(const Position& pos) const;
+    Item& getItemAt(const Position& pos) const;
     std::vector<Enemy*> getAdjacentEnemies(const Position& pos) const;
     std::vector<Item*> getAdjacentItems(const Position& pos) const;
+    
     
     // Movement and updates
     bool moveCharacter(Character* character, const Position& newPos);

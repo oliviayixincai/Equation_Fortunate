@@ -77,14 +77,23 @@ void TextDisplay::displayGameInfo(PlayerCharacter* player, int floorNum) {
     std::cout << "╭─────────────── GAME STATUS ───────────────╮" << std::endl;
     std::cout << "│ Floor: " << std::setw(2) << floorNum << " / 5";
     
-    // TODO: Add when PlayerCharacter methods are available
-    // For now, show placeholder info
-    std::cout << std::setw(20) << "Race: " << "Shade" << " │" << std::endl;
-    std::cout << "│ HP: " << std::setw(3) << "125" << "/" << std::setw(3) << "125";
-    std::cout << std::setw(15) << "Gold: " << std::setw(4) << "0" << " │" << std::endl;
-    std::cout << "│ Atk: " << std::setw(2) << "25";
-    std::cout << std::setw(8) << "Def: " << std::setw(2) << "25";
-    std::cout << std::setw(11) << "XP: " << std::setw(3) << "0" << " │" << std::endl;
+    // Use teammate's PlayerCharacter methods for real stats
+    char raceChar = player->getRace();
+    std::string raceName = "Unknown";
+    switch (raceChar) {
+        case 's': raceName = "Shade"; break;
+        case 'd': raceName = "Drow"; break;
+        case 'v': raceName = "Vampire"; break;
+        case 'g': raceName = "Goblin"; break;
+        case 't': raceName = "Troll"; break;
+    }
+    
+    std::cout << std::setw(15) << "Race: " << raceName << " │" << std::endl;
+    std::cout << "│ HP: " << std::setw(3) << player->getHP() << "/" << std::setw(3) << player->getMaxHP();
+    std::cout << std::setw(10) << "Gold: " << std::setw(4) << player->getGold() << " │" << std::endl;
+    std::cout << "│ Atk: " << std::setw(2) << player->getAtk();
+    std::cout << std::setw(8) << "Def: " << std::setw(2) << player->getDef();
+    std::cout << std::setw(11) << "Floor: " << std::setw(2) << floorNum << " │" << std::endl;
     std::cout << "╰───────────────────────────────────────────╯" << std::endl;
     
     // Add status effects area
