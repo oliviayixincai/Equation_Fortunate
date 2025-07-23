@@ -7,8 +7,10 @@ import <memory>;
 export class Game;
 
 // Need to include these after Game is declared
-import Character;
+import character; // Fixed: lowercase module name
 import observer;
+import item; // Add item import for new item integration
+import position; // Add position import
 
 export class Game {
     int floorNum;
@@ -27,13 +29,24 @@ public:
     
     // Core game flow
     void displayMessage();
+    void displayGame(); // Display floor and game info using observer
     void start(); // Main game loop for a floor
-    void processCommand(const std::string &cmd);
+    void processCommand(const std::string &cmd); // Legacy method
     void nextFloor();
     void quit();
     bool isOver() const;
     void gameOver();
     void restart();
+    
+    // Turn-based system
+    bool processPlayerTurn(const std::string& cmd);
+    bool attemptPlayerMove(int direction);
+    bool attemptPlayerAttack(int direction);
+    bool attemptUsePotion(int direction);
+    void processEnemyTurns();
+    void processEnemyTurn(class Enemy* enemy);
+    bool checkFloorComplete();
+    bool checkGameOver();
     
     // Player management
     void createPlayer(char raceChar);
