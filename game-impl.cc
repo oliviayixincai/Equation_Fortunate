@@ -9,6 +9,39 @@ import observer;
 import charpack1
 // TODO: Need charpack1 module for race classes - teammate to implement
 
+// Add temporary stub implementations at the top of the file for compilation
+class TemporaryPosition {
+public:
+    int x, y;
+    TemporaryPosition(int x = 0, int y = 0) : x(x), y(y) {}
+    bool operator==(const TemporaryPosition& other) const { return x == other.x && y == other.y; }
+};
+
+class TemporaryPlayerCharacter {
+private:
+    TemporaryPosition pos;
+    int hp = 125;
+    int maxHp = 125;
+    int atk = 25;
+    int def = 25;
+    int gold = 0;
+    char race = 's';
+public:
+    TemporaryPlayerCharacter() : pos(40, 15) {} // Start at middle of map
+    TemporaryPosition getPosition() const { return pos; }
+    void setPosition(const TemporaryPosition& newPos) { pos = newPos; }
+    int getHP() const { return hp; }
+    int getMaxHP() const { return maxHp; }
+    int getAtk() const { return atk; }
+    int getDef() const { return def; }
+    int getGold() const { return gold; }
+    void addGold(int amount) { gold += amount; }
+    char getRace() const { return race; }
+    void setRace(char r) { race = r; }
+    void heal(int amount) { hp = std::min(hp + amount, maxHp); }
+    void takeDamage(int damage) { hp = std::max(0, hp - damage); }
+};
+
 // Direction mapping for movement commands
 static const std::vector<std::string> DIRECTIONS = {"", "nw", "no", "ne", "we", "ea", "sw", "so", "se"};
 
@@ -141,7 +174,7 @@ bool Game::processPlayerTurn(const std::string& cmd) {
         if (observer) {
             observer->displayMessage("Farewell, " + playerName + "! Thanks for playing!");
         } else {
-            std::cout << "Farewell, " << playerName << "! Thanks for playing!" << std::endl;
+            std::cout << "Farewell, " + playerName + "! Thanks for playing!" << std::endl;
         }
         return false;
     }
@@ -154,6 +187,26 @@ bool Game::processPlayerTurn(const std::string& cmd) {
     if (cmd == "f") {
         toggleEnemyFreeze();
         return false; // Don't advance turn for freeze toggle
+    }
+    
+    // Add help command
+    if (cmd == "h" || cmd == "help") {
+        displayHelp();
+        return false; // Don't advance turn for help
+    }
+    
+    // Add floor information command
+    if (cmd == "info") {
+        displayFloorInfo();
+        return false; // Don't advance turn for info
+    }
+    
+    // Add save game stub (for future implementation)
+    if (cmd == "save") {
+        if (observer) {
+            observer->displayMessage("💾 Save game feature coming soon! (TODO: implement save system)");
+        }
+        return false;
     }
 
     // Movement commands
@@ -411,16 +464,17 @@ void Game::createPlayer(char raceChar) {
     }
     
     // TODO: Create actual race-specific player (need teammate to implement race classes in charpack1)
-    // For now, create a basic PlayerCharacter - teammate will implement proper constructors
-    player = new PlayerCharacter(this);
+    // For now, create a temporary player for testing
+    player = reinterpret_cast<PlayerCharacter*>(new TemporaryPlayerCharacter());
+    static_cast<TemporaryPlayerCharacter*>(player)->setRace(raceChar);
     
     std::string message = "⚔️  " + playerName + " the " + raceName + " has entered the dungeon!";
     if (observer) {
         observer->displayMessage(message);
-        observer->displayMessage("Player created successfully!");
+        observer->displayMessage("Player created successfully! (Using temporary implementation)");
     } else {
         std::cout << message << std::endl;
-        std::cout << "Player created successfully!" << std::endl;
+        std::cout << "Player created successfully! (Using temporary implementation)" << std::endl;
     }
 }
 
@@ -582,4 +636,77 @@ int Game::directionToInt(const std::string& dir) {
 
 bool Game::isValidDirection(const std::string& dir) {
     return directionToInt(dir) != -1 && !dir.empty();
+}
+
+void Game::displayHelp() {
+    if (observer) {
+        observer->displayMessage("🎮 ChamberCrawler3000 Help:");
+        observer->displayMessage("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        observer->displayMessage("📍 Movement: nw, no, ne, we, ea, sw, so, se");
+        observer->displayMessage("⚔️  Attack: 'a <direction>' (e.g., 'a nw' to attack northwest)");
+        observer->displayMessage("🧪 Use Potion: 'u <direction>' (e.g., 'u so' to use potion to the south)");
+        observer->displayMessage("❄️  Freeze Enemies: 'f' (cheat mode)");
+        observer->displayMessage("🔄 Restart Game: 'r'");
+        observer->displayMessage("ℹ️  Floor Info: 'info'");
+        observer->displayMessage("💾 Save Game: 'save' (coming soon)");
+        observer->displayMessage("❓ Help: 'h' or 'help'");
+        observer->displayMessage("🚪 Quit: 'q'");
+        observer->displayMessage("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    } else {
+        std::cout << "🎮 ChamberCrawler3000 Help:" << std::endl;
+        std::cout << "Movement: nw, no, ne, we, ea, sw, so, se" << std::endl;
+        std::cout << "Attack: 'a <direction>', Use Potion: 'u <direction>'" << std::endl;
+        std::cout << "Special: 'f' freeze, 'r' restart, 'q' quit, 'info' floor info" << std::endl;
+    }
+}
+
+void Game::displayFloorInfo() {
+    if (!currentFloor) {
+        if (observer) {
+            observer->displayMessage("❌ No floor loaded!");
+        }
+        return;
+    }
+    
+    // Count entities
+    int enemyCount = currentFloor->getEnemies().size();
+    int itemCount = currentFloor->getItems().size();
+    
+    if (observer) {
+        observer->displayMessage("🏰 Floor " + std::to_string(floorNum) + " Information:");
+        observer->displayMessage("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        observer->displayMessage("📏 Dimensions: " + std::to_string(currentFloor->getWidth()) + " x " + std::to_string(currentFloor->getHeight()));
+        observer->displayMessage("👹 Enemies: " + std::to_string(enemyCount));
+        observer->displayMessage("💎 Items: " + std::to_string(itemCount));
+        observer->displayMessage("🪜 Stairs: " + std::to_string(currentFloor->getStairPosition().x) + ", " + std::to_string(currentFloor->getStairPosition().y));
+        observer->displayMessage("❄️  Enemies Frozen: " + (enemiesFrozen ? "Yes" : "No"));
+        if (!floorFile.empty()) {
+            observer->displayMessage("📁 Loaded from: " + floorFile);
+        } else {
+            observer->displayMessage("🎲 Generated randomly");
+        }
+        observer->displayMessage("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    }
+}
+
+void Game::calculateNewPosition(int currentX, int currentY, int direction, int& newX, int& newY) {
+    // Calculate new position based on 8-directional movement
+    // Direction mapping: 0=nw, 1=no, 2=ne, 3=we, 4=center, 5=ea, 6=sw, 7=so, 8=se
+    newX = currentX;
+    newY = currentY;
+    
+    switch (direction) {
+        case 0: newX--; newY--; break; // nw
+        case 1: newY--; break;         // no (north)
+        case 2: newX++; newY--; break; // ne
+        case 3: newX--; break;         // we (west)
+        case 4: break;                 // center (no movement)
+        case 5: newX++; break;         // ea (east)
+        case 6: newX--; newY++; break; // sw
+        case 7: newY++; break;         // so (south)
+        case 8: newX++; newY++; break; // se
+        default:
+            // Invalid direction, don't move
+            break;
+    }
 }

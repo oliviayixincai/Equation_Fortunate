@@ -73,4 +73,9 @@ public:
     bool isValidDirection(const std::string& dir);
 
     void updateMessage(string msg) {message = msg;}
+    // Helper methods for enhanced gameplay
+    void displayHelp();
+    void displayFloorInfo();
+    void calculateNewPosition(int currentX, int currentY, int direction, int& newX, int& newY);
 };
+

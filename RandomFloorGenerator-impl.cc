@@ -212,30 +212,68 @@ bool RandomFloorGenerator::generateClassic5Chamber() {
 }
 
 bool RandomFloorGenerator::generateLinearChambers() {
-    // Generate chambers in a line
+    // Create a linear chain of chambers connected by passages
     std::mt19937 rng(seed);
     
-    int numChambers = 4 + (rng() % 3); // 4-6 chambers
-    int spacing = FLOOR_WIDTH / (numChambers + 1);
+    // Define positions for linear chambers (left to right)
+    std::vector<std::pair<int, int>> positions = {
+        {5, 8},   // Far left chamber
+        {20, 12}, // Left-center chamber
+        {35, 6},  // Center chamber
+        {50, 14}, // Right-center chamber
+        {65, 10}  // Far right chamber
+    };
     
-    for (int i = 0; i < numChambers; ++i) {
-        ChamberTemplate chamber = createSmallChamber(rng() % smallChambers.size());
-        int x = spacing * (i + 1) - chamber.width / 2;
-        int y = FLOOR_HEIGHT / 2 - chamber.height / 2;
+    std::cout << "🔗 Generating linear chamber pattern..." << std::endl;
+    
+    // Place chambers with random types
+    for (size_t i = 0; i < positions.size(); ++i) {
+        ChamberTemplate chamber;
+        int chamberType = rng() % 3; // 0=small, 1=medium, 2=large
         
-        if (placeChamber(chamber, x, y)) {
-            chamberPositions.push_back({x, y});
+        switch (chamberType) {
+            case 0:
+                chamber = createSmallChamber(rng() % smallChambers.size());
+                std::cout << "  🏠 Placing small chamber " << i + 1 << " at (" << positions[i].first << ", " << positions[i].second << ")" << std::endl;
+                break;
+            case 1:
+                chamber = createMediumChamber(rng() % mediumChambers.size());
+                std::cout << "  🏛️ Placing medium chamber " << i + 1 << " at (" << positions[i].first << ", " << positions[i].second << ")" << std::endl;
+                break;
+            case 2:
+                chamber = createLargeChamber(rng() % largeChambers.size());
+                std::cout << "  🏰 Placing large chamber " << i + 1 << " at (" << positions[i].first << ", " << positions[i].second << ")" << std::endl;
+                break;
         }
+        
+        if (!placeChamber(chamber, positions[i].first, positions[i].second)) {
+            std::cerr << "❌ Failed to place chamber " << i + 1 << std::endl;
+            return false;
+        }
+        
+        chamberPositions.push_back(positions[i]);
     }
     
-    // Connect adjacent chambers
+    // Connect chambers linearly (chamber 1 → 2 → 3 → 4 → 5)
+    std::cout << "🔗 Connecting chambers with passages..." << std::endl;
     for (size_t i = 0; i < chamberPositions.size() - 1; ++i) {
-        connectChambers(chamberPositions[i].first + 12, chamberPositions[i].second + 3,
-                       chamberPositions[i + 1].first, chamberPositions[i + 1].second + 3);
+        int x1 = chamberPositions[i].first + 8;      // Exit from right side
+        int y1 = chamberPositions[i].second + 3;
+        int x2 = chamberPositions[i + 1].first;      // Enter from left side
+        int y2 = chamberPositions[i + 1].second + 3;
+        
+        connectChambers(x1, y1, x2, y2);
+        std::cout << "  ➡️  Connected chamber " << i + 1 << " to chamber " << i + 2 << std::endl;
     }
     
+    // Add stairs and player spawn
     spawnStairs();
     spawnPlayerStart();
+    
+    // Add some random enemies and items for testing
+    spawnRandomEntities();
+    
+    std::cout << "✅ Linear chambers pattern generated successfully!" << std::endl;
     return validateFloor();
 }
 
@@ -334,6 +372,36 @@ void RandomFloorGenerator::spawnEnemies() {
 
 void RandomFloorGenerator::spawnItems() {
     // TODO: Implement item spawning when teammate completes Item system
+}
+
+void RandomFloorGenerator::spawnRandomEntities() {
+    std::mt19937 rng(seed + 1000); // Different seed for entity placement
+    
+    std::cout << "🎲 Spawning random entities for testing..." << std::endl;
+    
+    // Try to place some enemies in chambers
+    for (int attempts = 0; attempts < 10; ++attempts) {
+        int x = 10 + (rng() % 60); // Random position
+        int y = 5 + (rng() % 15);
+        
+        if (floorMap[y][x] == '.') { // Only place on floor tiles
+            char enemy = "HWEOMVL"[rng() % 7]; // Random enemy type
+            floorMap[y][x] = enemy;
+            std::cout << "  👹 Spawned enemy '" << enemy << "' at (" << x << ", " << y << ")" << std::endl;
+        }
+    }
+    
+    // Try to place some items
+    for (int attempts = 0; attempts < 8; ++attempts) {
+        int x = 10 + (rng() % 60);
+        int y = 5 + (rng() % 15);
+        
+        if (floorMap[y][x] == '.') { // Only place on floor tiles
+            char item = (rng() % 2 == 0) ? 'P' : 'G'; // Potion or Gold
+            floorMap[y][x] = item;
+            std::cout << "  " << (item == 'P' ? "🧪" : "💰") << " Spawned " << (item == 'P' ? "potion" : "gold") << " at (" << x << ", " << y << ")" << std::endl;
+        }
+    }
 }
 
 bool RandomFloorGenerator::validateFloor() const {

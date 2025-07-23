@@ -73,18 +73,34 @@ void TextDisplay::displayGameInfo(PlayerCharacter* player, int floorNum) {
         return;
     }
     
-    // TODO: Display actual player stats when teammate implements getters
-    std::cout << "Floor: " << floorNum;
+    // Enhanced game info display with better formatting
+    std::cout << "╭─────────────── GAME STATUS ───────────────╮" << std::endl;
+    std::cout << "│ Floor: " << std::setw(2) << floorNum << " / 5";
     
     // TODO: Add when PlayerCharacter methods are available
-    // std::cout << "   Race: " << player->getRace();
-    // std::cout << "   Gold: " << player->getGold();
-    // std::cout << std::endl;
-    // std::cout << "HP: " << player->getHP() << "/" << player->getMaxHP();
-    // std::cout << "   Atk: " << player->getAtk();
-    // std::cout << "   Def: " << player->getDef();
+    // For now, show placeholder info
+    std::cout << std::setw(20) << "Race: " << "Shade" << " │" << std::endl;
+    std::cout << "│ HP: " << std::setw(3) << "125" << "/" << std::setw(3) << "125";
+    std::cout << std::setw(15) << "Gold: " << std::setw(4) << "0" << " │" << std::endl;
+    std::cout << "│ Atk: " << std::setw(2) << "25";
+    std::cout << std::setw(8) << "Def: " << std::setw(2) << "25";
+    std::cout << std::setw(11) << "XP: " << std::setw(3) << "0" << " │" << std::endl;
+    std::cout << "╰───────────────────────────────────────────╯" << std::endl;
     
-    std::cout << "   Player: Created"; // Placeholder
+    // Add status effects area
+    std::cout << "Status: [Normal] ";
+    
+    // Add minimap or floor progress
+    std::cout << "Progress: ";
+    for (int i = 1; i <= 5; ++i) {
+        if (i < floorNum) {
+            std::cout << GREEN << "●" << RESET;
+        } else if (i == floorNum) {
+            std::cout << BLUE << "●" << RESET;
+        } else {
+            std::cout << WHITE << "○" << RESET;
+        }
+    }
     std::cout << std::endl;
     std::cout << std::endl; // Extra space for readability
 }

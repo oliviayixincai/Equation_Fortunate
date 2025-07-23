@@ -78,6 +78,7 @@ public:
     void spawnItems();
     void spawnStairs();
     void spawnPlayerStart();
+    void spawnRandomEntities(); // Add this new method for testing
     
     // Validation and debugging
     bool validateFloor() const;
@@ -87,4 +88,4 @@ public:
     // Static utility methods for external use
     static std::string generateFloorFile(FloorPattern pattern, unsigned int seed, const std::string& filename);
     static bool isValidFloorFile(const std::string& filename);
-}; 
+};

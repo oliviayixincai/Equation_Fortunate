@@ -49,6 +49,7 @@ bool Floor::loadFromFile(const std::string& filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
         std::cerr << "Error: Could not open floor file: " << filename << std::endl;
+        std::cerr << "   Please check if the file exists and is readable." << std::endl;
         return false;
     }
     
@@ -56,10 +57,15 @@ bool Floor::loadFromFile(const std::string& filename) {
     
     std::string line;
     int row = 0;
+    int playerSpawns = 0;
+    int stairCount = 0;
+    
+    std::cout << "📁 Loading floor from: " << filename << std::endl;
     
     while (std::getline(file, line) && row < FLOOR_HEIGHT) {
         // Ensure line is the right length
         if (line.length() > FLOOR_WIDTH) {
+            std::cout << "⚠️  Warning: Line " << row + 1 << " too long, truncating..." << std::endl;
             line = line.substr(0, FLOOR_WIDTH);
         } else {
             line.resize(FLOOR_WIDTH, ' '); // Pad with spaces
@@ -75,15 +81,24 @@ bool Floor::loadFromFile(const std::string& filename) {
                 case '\\': // Stair
                     stairPosition = Position(col, row);
                     map[row][col] = '.'; // Stairs are on floor tiles
+                    stairCount++;
+                    std::cout << "🪜 Found stairs at (" << col << ", " << row << ")" << std::endl;
                     break;
                 case '@': // Player spawn (handled by Game class)
                     map[row][col] = '.'; // Player is on floor tile
+                    playerSpawns++;
+                    std::cout << "👤 Found player spawn at (" << col << ", " << row << ")" << std::endl;
+                    break;
+                case 'H': case 'W': case 'E': case 'O': case 'M': case 'D': case 'L':
+                    std::cout << "👹 Found enemy '" << cell << "' at (" << col << ", " << row << ") [TODO: spawn when Character system ready]" << std::endl;
+                    break;
+                case 'P':
+                    std::cout << "🧪 Found potion at (" << col << ", " << row << ") [TODO: spawn when Item system ready]" << std::endl;
+                    break;
+                case 'G':
+                    std::cout << "💰 Found gold at (" << col << ", " << row << ") [TODO: spawn when Item system ready]" << std::endl;
                     break;
                 // TODO: Add enemy and item parsing when teammate implements constructors
-                // case 'H': case 'W': case 'E': case 'O': case 'M': case 'D': case 'L':
-                //     // Enemies - will create when Enemy constructors are ready
-                // case 'P': case 'G':
-                //     // Items - will create when Item constructors are ready
                 default:
                     // Keep the character as is (walls, doors, passages, etc.)
                     break;
@@ -95,7 +110,30 @@ bool Floor::loadFromFile(const std::string& filename) {
     
     file.close();
     
-    std::cout << "Floor loaded from file: " << filename << std::endl;
+    // Validate floor data
+    bool valid = true;
+    if (stairCount == 0) {
+        std::cerr << "Error: No stairs found in floor file!" << std::endl;
+        valid = false;
+    }
+    if (stairCount > 1) {
+        std::cerr << "Warning: Multiple stairs found (" << stairCount << "), using last one." << std::endl;
+    }
+    if (playerSpawns == 0) {
+        std::cerr << "Error: No player spawn (@) found in floor file!" << std::endl;
+        valid = false;
+    }
+    if (playerSpawns > 1) {
+        std::cerr << "Warning: Multiple player spawns found (" << playerSpawns << "), using Game's logic." << std::endl;
+    }
+    
+    if (valid) {
+        std::cout << "Floor loaded successfully from: " << filename << std::endl;
+        std::cout << "Floor stats: " << row << " rows, " << stairCount << " stairs, " << playerSpawns << " spawn points" << std::endl;
+    } else {
+        std::cerr << "Floor loaded with warnings. Game may not work correctly." << std::endl;
+    }
+    
     notifyObserver(); // Notify observer of the change
     return true;
 }
