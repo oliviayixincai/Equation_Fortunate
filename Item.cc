@@ -1,7 +1,7 @@
 export module item;
 import position;
 
-struct info {
+export struct info {
     int atk;
     int def;
 };
@@ -14,9 +14,12 @@ export class Item {
     Chamber *theChamber;
 
     public:
+    Position getPos {return pos};
     virtual void use() = 0;
     virtual void set(Position p) {pos = p;}
     virtual int getValue();
+    virtual Item &operator*=(double n) {return *this};
+    std::strong_ordering operator<=>(Item &other);
 };
 
 export class Gold: public Item {
@@ -41,6 +44,7 @@ export class Potion: public Item {
     public:
     Potion(info effect, int heal, Game *theGame, Chamber *theChamber);
     void use() override;
+    Item &operator*=(double n) override;
 };
 
 export class Stair: public Item {

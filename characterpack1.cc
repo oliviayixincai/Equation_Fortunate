@@ -4,6 +4,7 @@ export module charpack1;
 export class Drow: public PlayerCharacter {
 public:
     Drow(Game *theGame);
+    void useItem(Item &used) override;
 }
 
 export class Vampire: public PlayerCharacter {

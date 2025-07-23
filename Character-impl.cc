@@ -37,11 +37,28 @@ virtual void PlayerCharacter::heal(int n) {
 }
 
 virtual void PlayerCharacter::move(int direction) {
+    char cell = atPosition(pos + direction);
+    if (cell == '.' || cell == '+' || cell == '#' || cell == 'P') {
+    theGame->updatePlayer(pos, pos + direction);
     pos += direction;
+    } else if (cell == 'G') {
+        useItem(theGame->itemAt(pos + direction));
+        theGame->updatePlayer(pos, pos + direction);
+        pos += direction;
+    } else {
+        return;
+    }
+}
+
+virtual void Enemy::attack(Character &onWho) {
+    if (prng(1) == 1) {
+    onWho.attacked(*this);
+    }
 }
 
 void Enemy::death() {
-    theChamber->removeEnemy(this);
+    theFloor->award();
+    theFloor->removeEnemy(this);
 }
 
 virtual void Enemy::move() {
@@ -51,5 +68,13 @@ virtual void Enemy::move() {
             v.push_back(i);
         }
     }
-    pos += (v.at(prng(v.size())));
+    if (v.size != 0) {
+    int index = prng(v.size());
+    theFloor->update(pos, pos + v.at(index))
+    pos += (v.at(index));
+    }
+}
+
+std::strong_ordering Character::operator<=>(Character &other) {
+    return pos <=> other.pos;
 }

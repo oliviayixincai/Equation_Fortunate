@@ -8,8 +8,8 @@ PRNG prng1, prng2, prng3;				// global, normally one generator for entire progra
 extern PRNG prng1;					// declaration to use prng1 in another translation unit
 
 int main() {
-    uint32_t seed = getpid();				// start with a pseudo random-number
-    prng1.seed( seed );					// synchronize all generators with same seed
+   uint32_t seed = getpid();				// start with a pseudo random-number
+    prng1.seed( seed );	 				// synchronize all generators with same seed
     prng2.seed( seed );
     prng3.seed( seed );
 

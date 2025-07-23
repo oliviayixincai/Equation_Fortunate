@@ -12,17 +12,14 @@ export class Floor {
 private:
     static const int FLOOR_WIDTH = 79;
     static const int FLOOR_HEIGHT = 25;
+    static const Item ITEM_NOTHING;
     
     char map[FLOOR_HEIGHT][FLOOR_WIDTH + 1]; // +1 for null terminator
-    std::vector<Enemy*> enemies;
-    std::vector<Item*> items;
+    std::vector<Enemy> enemies;
+    std::vector<Item> items;
     PlayerCharacter* player;
     Position stairPosition;
     Observer* observer;
-    
-    // Entity tracking
-    std::vector<std::vector<Character*>> characterGrid; // Grid for fast lookups
-    std::vector<std::vector<Item*>> itemGrid;
     
 public:
     Floor(Observer* obs = nullptr);
@@ -39,6 +36,12 @@ public:
     void removeEnemy(Enemy* enemy);
     void removeItem(Item* item);
     
+
+    // useful functions: ( more useful than these ^)
+    char atPosition(Position pos);
+    void update(Position pos1, Position pos2);
+    void award(int value = 0);
+
     // Position queries
     bool isValidPosition(const Position& pos) const;
     bool isFloorTile(const Position& pos) const;

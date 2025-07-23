@@ -11,10 +11,10 @@ Position Position::moveY (int y) {
 std::strong_ordering Position::operator<=>(Position &other) {
     auto xDiff = x <=> other.x;
     auto yDiff = y <=> other.y;
-    if (xDiff != 0) {
-        return xDiff;
-    } else {
+    if (yDiff != 0) {
         return yDiff;
+    } else {
+        return xDiff;
     }
 }
 bool Position::near(Position &other) {

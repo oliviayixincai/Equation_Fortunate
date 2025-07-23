@@ -27,3 +27,12 @@ void DragonHoard::use() {
         theChamber->removeItem(this);
     }
 }
+
+Item &Potion::operator*=(double n) {
+    effect.atk *= n;
+    effect.def *= n;
+    heal *= n;
+}
+std::strong_ordering operator<=>(Item &other) {
+    return pos <=> other.pos;
+}
