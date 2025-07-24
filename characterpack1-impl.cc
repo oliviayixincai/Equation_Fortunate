@@ -87,13 +87,28 @@ int Merchant::attacked(Character &byWho) {
 }
 
 void Merchant::death() {
-    theChamber->genGold(pos, 4);
+    theChamber->award(4);
     theChamber->removeEnemy(this);
 }
 
-Dragon::Dragon(Floor *theFloor, Observer *treasure): treasure{treasure}, pos{0, 0}, hp{150}, atk{20}, def{20}, theChamber{theChamber}, race{'D'} {}
+Dragon::Dragon(Floor *theFloor): observer{nullptr}, pos{0, 0}, hp{150}, atk{20}, def{20}, theChamber{theChamber}, race{'D'} {}
 
+void Dragon::move() {}
+void Dragon::set(Position p) {
+    pos = p;
+    for (int i = 1; i <= 8; i++) {
+        if (theFloor->getItemAt(p + i)->getValue() == 6) {
+            observer = theFloor->getItemAt(p + i);
+            return;
+        }
+    }
+}
+
+Position Dragon::getPosition() {
+    return observer->getPosition;
+}
 void Dragon::death() {
+    theFloor->removeEnemy(pos);
     treasure->notify();
 }
 

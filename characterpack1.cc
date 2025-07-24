@@ -28,25 +28,25 @@ public:
 
 export class Human: public Enemy {
 public:
-    Human(Chamber *theChamber);
+    Human(Floor *theFloor);
     void death() override;
 };
 
 export class Dwarf: public Enemy {
 public:
-    Dwarf(Chamber *theChamber);
+    Dwarf(Floor *theFloor);
     int attacked(Character &byWho) override;
 };
 
 export class Elf: public Enemy {
 public:
-    Elf(Chamber *theChamber);
+    Elf(Floor *theFloor);
     void attack(Character &onWho) override;
 };
 
 export class Orc: public Enemy {
 public:
-    Orc(Chamber *theChamber);
+    Orc(Floor *theFloor);
     void attack(Character &onWho) override;
 };
 
@@ -54,7 +54,7 @@ export class Merchant: public Enemy {
     static bool isHostile = false;
     bool sold = false;
 public:
-    Merchant(Chamber *theChamber);
+    Merchant(Floor *theFloor);
     int attacked(Character &byWho) override;
     void death() override;
 };
@@ -62,13 +62,17 @@ public:
 export class Dragon: public Enemy {
     Observer *treasure;
     friend class DragonHoard;
-    Dragon(Chamber *theChamber);
+    
 public:
+    Position getPosition() override;
+    Dragon(Floor *theFloor)
+    void set(Position pos) override;
+    void move() override;
     void death() override;
 };
 
 export class Halfling: public Enemy {
 public:
-    Halfling(Chamber *theChamber);
+    Halfling(Floor *theFloor);
     int attacked() override;
 };

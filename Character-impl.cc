@@ -22,13 +22,24 @@ PlayerCharacter::PlayerCharacter(Game *theGame): pos{0, 0}, hp{125}, maxHp{125},
 virtual void PlayerCharacter::death() {
     game->gameOver();
 }
+virtual void PlayerCharacter::attack(Character &onWho) {
+    
+    if(onWho->getPosition() == {0, 0}) {
+        theGame->updateMessage("attacked nobody!");
+        return;
+    }
+    onWho.attacked(*this);
+}
 
 virtual PlayerCharacter *remove() {
     return this;
 }
 
 virtual void PlayerCharacter::useItem(Item &used) {
-    gold += used.getValue();
+    if(used->getPosition() == {0, 0}) {
+        theGame->updateMessage("drank nothing!");
+        return;
+    }
     used.use();
 }
 
@@ -42,9 +53,12 @@ virtual void PlayerCharacter::move(int direction) {
     theGame->updatePlayer(pos, pos + direction);
     pos += direction;
     } else if (cell == 'G') {
-        useItem(theGame->itemAt(pos + direction));
-        theGame->updatePlayer(pos, pos + direction);
+        useItem(theGame->getFloor->getItemAt(pos + direction));
+        theGame->getFloor->updatePlayer(pos, pos + direction);
         pos += direction;
+    } else if (cell == '\\') {
+        theGame->nextLevel();
+        throw string{"next level"};
     } else {
         return;
     }
@@ -58,7 +72,7 @@ virtual void Enemy::attack(Character &onWho) {
 
 void Enemy::death() {
     theFloor->award();
-    theFloor->removeEnemy(this);
+    theFloor->removeEnemy(pos);
 }
 
 virtual void Enemy::move() {

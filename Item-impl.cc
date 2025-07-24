@@ -4,17 +4,17 @@ virtual int Item::getValue() {return 0;}
 
 virtual int Gold::getValue() {return value;}
 
-Gold::Gold(int value, Game *theGame, Chamber *theChamber): pos{0, 0}, value{value}, theGame{theGame}, theChamber{theChamber} {}
+Gold::Gold(int value, Floor *theFloor): pos{0, 0}, value{value}, theFloor{theFloor} {}
 
-void Gold::use() {theChamber->removeItem(this);}
+void Gold::use() {
+    theFloor->award(value);
+    theFloor->removeItem(pos);
+}
 
-DragonHoard::DragonHoard(int value, Game *theGame, Chamber *theChamber): theDragon{nullptr}, pos{0, 0}, value{value}, theGame{theGame}, theChamber{theChamber} {}
+DragonHoard::DragonHoard(Floor *theFloor): theDragon{nullptr}, pos{0, 0}, value{6}, theFloor{theFloor} {}
 
 DragonHoard::set(Position p) {
     pos = p;
-    theDragon = new Dragon{theChamber, this};
-    theDragon->set(p);
-    theDragon->move();
 }
 
 void DragonHoard::notify() {
@@ -24,7 +24,8 @@ void DragonHoard::notify() {
 
 void DragonHoard::use() {
     if (available) {
-        theChamber->removeItem(this);
+        theFloor->award(value);
+        theFloor->removeItem(pos);
     }
 }
 
@@ -32,6 +33,14 @@ Item &Potion::operator*=(double n) {
     effect.atk *= n;
     effect.def *= n;
     heal *= n;
+}
+
+void Potion::use() {
+    if (theFloor->getPlayer()->getRace() == 'd') {
+        (*this) *= 1.5;
+    }
+    theFloor->usePotion(*this);
+    theFloor->removeItem(pos);
 }
 std::strong_ordering operator<=>(Item &other) {
     return pos <=> other.pos;

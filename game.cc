@@ -17,23 +17,20 @@ import position; // Add position import
 
 export class Game {
     int floorNum;
-    class Floor *currentFloor; // Use class Forward declaration
+    Floor *currentFloor; // Use class Forward declaration
     PlayerCharacter *player;
     bool over;
     bool enemiesFrozen;
     std::string message = "";
-    Observer *observer; // For display/UI updates
-    std::string floorFile; // Optional floor file for command line
+    std::ifstream floorFile; // Optional floor file for command line
     std::string playerName; // Player's chosen name
 
 public:
-    Game();
-    Game(const std::string& floorFile); // Constructor with floor file
+    Game(std::ifstream& floorFile); // Constructor with floor file
     ~Game();
     
     // Core game flow
     void displayMessage();
-    void displayGame(); // Display floor and game info using observer
     void start(); // Main game loop for a floor
     void processCommand(const std::string &cmd); // Legacy method
     void nextFloor();
@@ -43,10 +40,6 @@ public:
     void restart();
     
     // Turn-based system
-    bool processPlayerTurn(const std::string& cmd);
-    bool attemptPlayerMove(int direction);
-    bool attemptPlayerAttack(int direction);
-    bool attemptUsePotion(int direction);
     void processEnemyTurns();
     void processEnemyTurn(class Enemy* enemy);
     bool checkFloorComplete();
@@ -60,6 +53,7 @@ public:
     std::string getPlayerName() const;
     
     // Floor management
+    Floor *getFloor() {return currentFloor;}
     void initializeFloor();
     void loadFloorFromFile(const std::string& filename);
     
@@ -75,7 +69,5 @@ public:
     void updateMessage(const std::string& msg) {message = msg;}
     // Helper methods for enhanced gameplay
     void displayHelp();
-    void displayFloorInfo();
-    // REMOVED: calculateNewPosition() - using teammate's Position::operator+ instead
 };
 

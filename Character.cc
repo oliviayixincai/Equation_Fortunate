@@ -22,12 +22,12 @@ protected:
 public:
     Character() = default;
     virtual ~Character() = 0;
-    Position getPosition() const {return pos;}
+    virtual Position getPosition() const {return pos;}
     int getHP() const {return hp;}
     virtual int getAtk() const {return atk;}
     virtual int getDef() const {return def;}
     char getRace() const {return race;}
-    void set(Position p) {pos = p};
+    virtual void set(Position p) {pos = p};
 
     virtual void death() = 0;
     virtual void useItem(Item &used) = 0;
@@ -37,8 +37,8 @@ public:
     virtual void move(int direction) = 0;
 
     std::strong_ordering operator<=>(Character &other);
-}
 };
+
 
 export class PlayerCharacter: public Character {
 protected:
@@ -49,7 +49,8 @@ public:
     virtual PlayerCharacter *remove();
     PlayerCharacter(Game *theGame);
     void newFloor();
-    void gainGold(int n) {gold += n;}
+    void gainGold(int value) {gold += value;}
+    int getGold() {return gold;}
     void death();
     void useItem(Item &used);
     void heal(int hp);
@@ -57,9 +58,9 @@ public:
 };
 
 export class Enemy: public Character {
-    int code;
     Floor *theFloor;
 public:
+    Enemy(): pos{0, 0}, theFloor{nullptr} {}
     virtual void death();
     virtual void move();
     virtual void attack(Character &onWho) override;
