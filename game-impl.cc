@@ -4,9 +4,8 @@ import <string>;
 import <vector>;
 import <sstream>;
 import character; // Using teammate's module
-import Floor;
-import observer;
-import charpack1
+import floor;
+import charpack1;
 // TODO: Import PRNG module when available
 // extern PRNG prng; // Global PRNG instance from teammate
 
@@ -55,7 +54,7 @@ void Game::displayMessage() {
     cout << "HP: " << player->getHP() << endl;
     cout << "ATK: " << player->getAtk() << endl;
     cout << "Def: " << player->getDef() << endl;
-    cout << "Actions " << message << endl;
+    cout << "Actions: " << message << endl;
 }
 
 void Game::start() {
@@ -95,7 +94,8 @@ void Game::restart() {
     over = false;
     enemiesFrozen = false;
     // Keep the player name for restart
-    
+    floorFile.clear();
+    floorFile.seekg(0, std::ios::beg);
     start();
 }
 
@@ -107,8 +107,8 @@ void Game::quit() {
 void Game::nextLevel {
     floorNum++;
     try {floorFile >> *currentFloor;
-    } catch {
-        displayGame();
+    } catch (int e) {
+        gameOver();
     }
 }
 
@@ -145,14 +145,24 @@ void Game::turn() {
         return; // Don't advance turn for info
     }
     
+    Position pos = player->getPosition();
     // Add save game stub (for future implementation)
 
     // Movement commands
     for (size_t i = 0; i < DIRECTIONS.size(); ++i) {
         if (!DIRECTIONS[i].empty() && cmd == DIRECTIONS[i]) {
-            try {player->move(i);
-            } catch string{"new level"} {
-
+            char cell = atPosition(pos + direction);
+            if (cell == '.' || cell == '+' || cell == '#') {
+            player->move(i);
+            } else if (cell == 'G') {
+            player->useItem(*(currentFloor->getItemAt(pos + direction)));
+            player->move(i);
+            } else if (cell == '\\') {
+            nextLevel();
+            displayGame();
+            return;
+            } else {
+                updateMessage("something is on the way!");
             }
         }
     }
@@ -162,15 +172,23 @@ void Game::turn() {
         std::string dir = cmd.substr(2);
 
             int direction = isValidDirection(dir) ? directionToInt(dir) : 0;
+            if (atPosition(pos + direction) == 'P') {
             player->useItem(*currentFloor->getItemAt(player->getPosition + direction));
+            } else {
+                updateMessage("drank air and dust");
+            }
     }
     // Attack: a direction
     if (cmd.size() > 2 && cmd.substr(0, 2) == "a ") {
         std::string dir = cmd.substr(2);
         int direction = isValidDirection(dir) ? directionToInt(dir) : 0;
+        char cell = atPosition(pos + direction);
+        if (cell == 'H' || cell == 'O' || cell == 'D' || cell == 'E' || cell == 'L' || cell == 'M' || cell == 'W') {
         player->attack(*currentFloor->getEnemyAt(player->getPosition + direction));
+        } else {
+            updateMessage("hit nothing");
+        }
     }
-
     processEnemyTurns();
     std::sort(enemies.begin(), enemies.end(), [](Enemy* a, Enemy* b) {
     return *a < *b;
@@ -183,10 +201,19 @@ void Game::turn() {
 void Game::processEnemyTurns() {
     if (!currentFloor || enemiesFrozen) return;
     for (auto enemy : enemies) {
-        if (enemy->getPosition().near(player->getPosition())) {
+        if (enemy->near(player->getPosition())) {
             enemy->attack(*player);
         } else if (!enemiesFrozen) {
-            enemy->move;
+            vector<int> v;
+    for (int i = 1; i <= 8; i++) {
+        if(theChamber->atPosition(pos+i) == '.') {
+          v.push_back(i);
+        }
+    }
+    if (v.size != 0) {
+    int index = prng(v.size());
+    *enemy->move(v.at(i))
+    }
         }
     }
 }

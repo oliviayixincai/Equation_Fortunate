@@ -1,37 +1,43 @@
-export module Floor;
+export module floor;
 import <vector>;
 import <string>;
 import <iostream>;
 import <fstream>;
 import character;
+import charpack1;
+import decorator;
 import item;
 import position;
 import observer;
 
-export class Floor {
+export class Floor: public Observer{
 private:
     static const int FLOOR_WIDTH = 79;
     static const int FLOOR_HEIGHT = 25;
-    static const Item ITEM_NOTHING = Item();
-    static const Enemy ENEMY_NOTHING = Enemy();
+
     
-    char map[FLOOR_HEIGHT][FLOOR_WIDTH + 1]; // +1 for null terminator
+    char map[FLOOR_HEIGHT][FLOOR_WIDTH];
     std::vector<Enemy *> enemies;
     std::vector<Item *> items;
-    PlayerCharacter* player;
+    PlayerCharacter *player;
     char occupied = '.';
+    Observer *theGame;
 
-public:
-    Floor();
-    ~Floor();
-    
     void usePotion(Potion &pot);
     // Entity management
+    
+    void removeEnemy(Position p);
+    void removeItem(Position p);
+
+public:
+    Floor(Observer *theGame);
+    ~Floor();
+    
     void addPlayer(PlayerCharacter* p);
-    void addEnemy(Enemy* enemy);
-    void addItem(Item* item);
-    void removeEnemy(Enemy* enemy);
-    void removeItem(Item* item);
+    void addEnemy(char race, Position pos);
+    void addItem(char type, Position pos);
+    void notify(Position pos1, Position pos2, int who) override;
+    
     
 
     // useful functions: ( more useful than these ^)
@@ -43,34 +49,13 @@ public:
 
     
     // Entity queries  
-    Character& getEnemyAt(const Position& pos) const;
-    Item& getItemAt(const Position& pos) const;
-    
-    // Movement and updates
-    bool moveCharacter(Character* character, const Position& newPos);
-    void updateEnemies(bool frozen = false);
-    void processPlayerAction();
-    
-    // Game mechanics
-    Position getStairPosition() const { return stairPosition; }
-    PlayerCharacter* getPlayer() const { return player; }
-    std::vector<Enemy*>& getEnemies() { return enemies; }
-    std::vector<Item*>& getItems() { return items; }
-    
-    // Observer notifications
-    void notifyObserver();
-    void setObserver(Observer* obs) { observer = obs; }
-    
-    // Display data for Observer
-    char getCell(int row, int col) const;
-    char getDisplayChar(const Position& pos) const;
-    int getWidth() const { return FLOOR_WIDTH; }
-    int getHeight() const { return FLOOR_HEIGHT; }
-    
-    // Debug and utility
+    bool isValidPosition(const Position& pos) const;
+    Enemy *getEnemyAt(Position& pos) const;
+    Item *getItemAt(Position& pos) const;
+    PlayerCharacter* getPlayer() const { return player;}
     void printDebugInfo() const;
 
     void printFloor() const;
 
-    friend istream &operator>>(istream &in, Floor &floor);
+    friend std::istream &operator>>(std::istream &in, Floor &floor);
 };

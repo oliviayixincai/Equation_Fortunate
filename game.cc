@@ -1,21 +1,15 @@
 export module game;
 import <string>;
 import <vector>;
-import <memory>;
-
-// Forward declaration for PRNG
-export class PRNG;
-
-// Forward declarations for circular dependency resolution
-export class Game;
-
-// Need to include these after Game is declared
-import character; // Fixed: lowercase module name
+import <fstream>;
+import floor;
+import prng;
+import character;
 import observer;
-import item; // Add item import for new item integration
-import position; // Add position import
+import item;
+import position;
 
-export class Game {
+export class Game: public Observer {
     int floorNum;
     Floor *currentFloor; // Use class Forward declaration
     PlayerCharacter *player;
@@ -29,6 +23,7 @@ public:
     Game(std::ifstream& floorFile); // Constructor with floor file
     ~Game();
     
+    void notify(Position pos1, Position pos2, int who) override;
     // Core game flow
     void displayMessage();
     void start(); // Main game loop for a floor

@@ -1,18 +1,15 @@
-import character;
 export module decorator;
-
-struct info {
-    int atk;
-    int def;
-}
+import character;
+import item;
 
 export class Decorator: public PlayerCharacter {
-    info potion;
     PlayerCharacter *next;
+    info potion;
+    
 public:
-    Decorator();
+    Decorator(PlayerCharacter *next, info info);
     ~Decorator();
     PlayerCharacter *remove() override;
-    int getAtk() override;
-    int getDef() override;
+    int getAtk() const override;
+    int getDef() const override;
 };
