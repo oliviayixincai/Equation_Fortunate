@@ -1,23 +1,32 @@
 import game;
 import <iostream>;
 import <string>;
-#include "PRNG.h"
+import <fstream>;
+import <cstdint>;
+import prng;
+import character;
+import charpack1;
+import observer;
+import floor;
+import decorator;
+import item;
+using namespace std;
 
 PRNG prng;
 
 int main(int argc, char* argv[]) {
     try {
-        uint32_t seed = getpid();
-        prng.seed( seed );
+        std::string floorFile;
         // Handle optional floor file command line argument
         if (argc > 1) {
-            std::string floorFile = argv[1];
-            ifstream ifs = {floorFile};         
+            floorFile = argv[1];      
         } else {
-            FloorGen();
-            ifstream ifs = {"MyFloors.txt"}; 
+            floorFile = "MyFloors.txt";
+
         }
-            Game game{ifs};
+            ifstream ifs {floorFile}; 
+            cout << "file opened " << floorFile << endl;
+            Game game{&ifs};
             game.start();
     while (!game.isOver()) {
         game.turn();

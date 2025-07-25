@@ -1,31 +1,28 @@
 module item;
 
-virtual int Item::getValue() {return 0;}
+int Item::getValue() {return 0;}
 
-virtual int Gold::getValue() {return value;}
+int Gold::getValue() {return value;}
 
-Gold::Gold(int value, Floor *theFloor): pos{0, 0}, value{value}, theFloor{theFloor} {}
-
-void Gold::use() {
-    theFloor->award(value);
-    theFloor->removeItem(pos);
+void Item::use() {
+    theFloor->notify(pos, {0, 0}, 2);
 }
 
-DragonHoard::DragonHoard(Floor *theFloor): theDragon{nullptr}, pos{0, 0}, value{6}, theFloor{theFloor} {}
+Gold::Gold(int value, Observer *theFloor): Item{theFloor}, value{value} {}
 
-DragonHoard::set(Position p) {
-    pos = p;
-}
+// void Gold::use() {
+//    theFloor->notify(pos, {0, 0}, 2);
+//    theFloor->award(value);
+//    theFloor->removeItem(pos);
+// }
 
-void DragonHoard::notify() {
-    delete theDragon;
-    available = true;
-}
+DragonHoard::DragonHoard(Observer *theFloor): Gold{6, theFloor} {}
 
 void DragonHoard::use() {
     if (available) {
-        theFloor->award(value);
-        theFloor->removeItem(pos);
+//      theFloor->award(value);
+//      theFloor->removeItem(pos);
+        theFloor->notify(pos, {0, 0}, 2);
     }
 }
 
@@ -33,15 +30,16 @@ Item &Potion::operator*=(double n) {
     effect.atk *= n;
     effect.def *= n;
     heal *= n;
+    return *this;
 }
 
-void Potion::use() {
-    if (theFloor->getPlayer()->getRace() == 'd') {
-        (*this) *= 1.5;
-    }
-    theFloor->usePotion(*this);
-    theFloor->removeItem(pos);
-}
-std::strong_ordering operator<=>(Item &other) {
-    return pos <=> other.pos;
-}
+Potion::Potion(info effect, int heal, Observer *theFloor):Item{theFloor}, effect{effect}, heal{heal} {}
+
+// void Potion::use() {
+    // if (theFloor->getPlayer()->getRace() == 'd') {
+    //    (*this) *= 1.5;
+    // }
+    // theFloor->usePotion(*this);
+    // theFloor->removeItem(pos);
+//     theFloor->notify(pos, {0, 0}, 2);
+// }

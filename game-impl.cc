@@ -3,21 +3,18 @@ import <iostream>;
 import <string>;
 import <vector>;
 import <sstream>;
+import <algorithm>;
+import <stdexcept>;
 import character; // Using teammate's module
-import Floor;
-import observer;
-import charpack1
-// TODO: Import PRNG module when available
-// extern PRNG prng; // Global PRNG instance from teammate
+import floor;
+import charpack1;
+import prng;
 
-// Temporary stub classes REMOVED - now using teammate's real implementations
-
-// Direction mapping for movement commands (aligned with teammate's Position::operator+ numbering)
-// 0=center, 1=nw, 2=no, 3=ne, 4=we, 5=ea, 6=sw, 7=so, 8=se
+PRNG prng;
 static const std::vector<std::string> DIRECTIONS = {"", "nw", "no", "ne", "we", "ea", "sw", "so", "se"};
 
-Game::Game(const std::string& floorFile) : floorNum(1), currentFloor(nullptr), player(nullptr), over(false), enemiesFrozen(false), observer(nullptr), floorFile(floorFile), playerName("") {
-    std::cout << "ChamberCrawler3000 initialized with floor file: " << floorFile << std::endl;
+Game::Game(std::ifstream *floorFile): floorNum(1), currentFloor(nullptr), player(nullptr), over(false), enemiesFrozen(false), playerName(""), floorFile{floorFile} {
+    std::cout << "ChamberCrawler3000 initialized with floor file" << std::endl; 
 }
 
 Game::~Game() {
@@ -25,8 +22,42 @@ Game::~Game() {
     delete player;
 }
 
-string Game::getRaceName() {
-    string race;
+void Game::notify(Position pos1, Position pos2, int who) {
+    if (!pos2) {
+        gameOver();
+    }
+    currentFloor->notify(pos1, pos2, who);
+}
+
+void Game::createPlayer(char raceChar) {
+    PlayerCharacter *p = nullptr;
+    switch (raceChar)
+    {
+    case 's':
+        p = new PlayerCharacter{this};
+        break;
+    case 'd':
+        p = new Drow{this};
+        break;
+    case 'v':
+        p = new Vampire{this};
+        break;
+    case 't':
+        p = new Troll{this};
+        break;
+    case 'g':
+        p = new Goblin{this};
+        break;
+    default:
+        p = new PlayerCharacter{this};
+        break;
+    }
+    player = p;
+    updateMessage(" the " + getRaceName() + " has entered the dungeon!");
+}
+
+std::string Game::getRaceName() {
+    std::string race;
     switch (player->getRace())
     {
     case 's':
@@ -51,33 +82,40 @@ string Game::getRaceName() {
 }
 
 void Game::displayMessage() {
-    cout << "Race: " << getRaceName() << " Gold: " << player->getGold() << "        " << "Floor " << floorNum << endl;
-    cout << "HP: " << player->getHP() << endl;
-    cout << "ATK: " << player->getAtk() << endl;
-    cout << "Def: " << player->getDef() << endl;
-    cout << "Actions " << message << endl;
+    std::cout << "Race: " << getRaceName() << " Gold: " << player->getGold() << "        " << "Floor " << floorNum << std::endl;
+    std::cout << "HP: " << player->getHP() << std::endl;
+    std::cout << "ATK: " << player->getAtk() << std::endl;
+    std::cout << "Def: " << player->getDef() << std::endl;
+    std::cout << "Actions: " << message << std::endl;
 }
 
 void Game::start() {
     char race;
-    cout << "Welcome, please select your race: (s)hade, (d)row, (v)ampire, (g)oblin, (t)roll, or (q)uit" << endl;
-    cin >> race;
+    std::string garbage;
+    std::cout << "Welcome, please select your race: (s)hade, (d)row, (v)ampire, (g)oblin, (t)roll, or (q)uit" << std::endl;
+    std::cin >> race;
+    getline(std::cin, garbage);
     if (race == 'q') {
         over = true;
         return;
     }
-    createPlayer(char raceChar);
-    currentFloor = new Floor;
-    floorFile >> *currentFloor;
+    createPlayer(race);
+    floorNum = 1;
+    currentFloor = new Floor{this};
+    currentFloor->addPlayer(player);
+    *floorFile >> *currentFloor;
+    displayGame();
 }
 
 void Game::gameOver() {
     char cmd;
+    std::string garbage;
     if (floorNum > 5) {
-        cout << "congratulations, you beat the game! your score is: "<< player->getGold() <<"press r to restart, q to quit" <<endl;
+        std::cout << "congratulations, you beat the game! your score is: "<< player->getGold() <<"press r to restart, q to quit" << std::endl;
     }
-    cout << "Game Over, your score is: "<< player->getGold() <<"press r to restart, q to quit" <<endl;
-    cin >> cmd;
+    std::cout << "Game Over, your score is: "<< player->getGold() <<"press r to restart, q to quit" << std::endl;
+    std::cin >> cmd;
+    getline(std::cin, garbage);
     if (cmd == 'r') {
         restart();
     } else {
@@ -95,27 +133,30 @@ void Game::restart() {
     over = false;
     enemiesFrozen = false;
     // Keep the player name for restart
-    
+    floorFile->clear();
+    floorFile->seekg(0, std::ios::beg);
     start();
 }
 
 void Game::quit() {
     over = true;
-    std::string message = "👋 Thanks for playing ChamberCrawler3000!";
+    std::cout << "Thanks for playing ChamberCrawler3000!";
 }
 
-void Game::nextLevel {
+void Game::nextLevel() {
     floorNum++;
-    try {floorFile >> *currentFloor;
-    } catch {
-        displayGame();
+    try {
+        *floorFile >> *currentFloor;
+    } catch (int e) {
+        gameOver();
     }
 }
 
 void Game::turn() {
-    string cmd;
-    getline(cin, cmd);
+    std::string cmd;
+    getline(std::cin, cmd);
 
+    std::cout << "You entered: " << cmd << std::endl;
     // Game commands (only when player exists)
     if (cmd == "q") {
         over = true;
@@ -129,133 +170,106 @@ void Game::turn() {
     }
 
     if (cmd == "f") {
-        toggleEnemyFreeze();
-        return; // Don't advance turn for freeze toggle
+        toggleEnemyFreeze(); // Don't advance turn for freeze toggle
     }
     
     // Add help command
     if (cmd == "h" || cmd == "help") {
-        displayHelp();
-        return; // Don't advance turn for help
+        printEnemies();
     }
     
     // Add floor information command
     if (cmd == "info") {
-        displayFloorInfo();
         return; // Don't advance turn for info
     }
     
+    Position pos = player->getPosition();
     // Add save game stub (for future implementation)
 
     // Movement commands
     for (size_t i = 0; i < DIRECTIONS.size(); ++i) {
-        if (!DIRECTIONS[i].empty() && cmd == DIRECTIONS[i]) {
-            try {player->move(i);
-            } catch string{"new level"} {
-
+        if (cmd == DIRECTIONS.at(i)) {
+            char cell = currentFloor->atPosition(pos + i);
+            if (cell == '.' || cell == '+' || cell == '#') {
+            player->move(i);
+            } else if (cell == 'G') {
+            player->useItem(*(currentFloor->getItemAt(pos + i)));
+            player->move(i);
+            } else if (cell == '\\') {
+            nextLevel();
+            if (floorNum < 6) {
+            displayGame();
+            }
+            return;
+            } else {
+                updateMessage("something is on the way!");
             }
         }
     }
+    std::cout << "You entered: " << cmd << std::endl;
 
     // Use potion: u direction
     if (cmd.size() > 2 && cmd.substr(0, 2) == "u ") {
         std::string dir = cmd.substr(2);
 
             int direction = isValidDirection(dir) ? directionToInt(dir) : 0;
-            player->useItem(*currentFloor->getItemAt(player->getPosition + direction));
+            if (currentFloor->atPosition(pos + direction) == 'P') {
+            player->useItem(*currentFloor->getItemAt(player->getPosition() + direction));
+            } else {
+                updateMessage("drank air and dust");
+            }
     }
     // Attack: a direction
     if (cmd.size() > 2 && cmd.substr(0, 2) == "a ") {
         std::string dir = cmd.substr(2);
         int direction = isValidDirection(dir) ? directionToInt(dir) : 0;
-        player->attack(*currentFloor->getEnemyAt(player->getPosition + direction));
+        char cell = currentFloor->atPosition(pos + direction);
+        if (cell == 'H' || cell == 'O' || cell == 'D' || cell == 'E' || cell == 'L' || cell == 'M' || cell == 'W') {
+        player->attack(*currentFloor->getEnemyAt(player->getPosition() + direction));
+        } else {
+            updateMessage("hit nothing");
+        }
     }
-
+    std::cout << "You entered: " << cmd << std::endl;
     processEnemyTurns();
-    std::sort(enemies.begin(), enemies.end(), [](Enemy* a, Enemy* b) {
-    return *a < *b;
-    });
-
     displayGame();
 }
 
 
-void Game::processEnemyTurns() {
-    if (!currentFloor || enemiesFrozen) return;
-    for (auto enemy : enemies) {
-        if (enemy->getPosition().near(player->getPosition())) {
-            enemy->attack(*player);
-        } else if (!enemiesFrozen) {
-            enemy->move;
-        }
-    }
-}
+
 
 void Game::displayGame() {
-    currentFloor->printFloor;
+    currentFloor->printFloor();
     displayMessage();
-}
-
-void Game::promptForPlayerName() {
-    std::cout << "🎮 Welcome, brave adventurer! What is your name?" << std::endl;
-    std::cout << "Enter your name (or 'q' to quit): ";
-    
-    std::string name;
-    if (!std::getline(std::cin, name)) {
-        over = true;
-        return;
-    }
-    
-    if (name == "q" || name == "Q") {
-        over = true;
-        std::cout << "Goodbye!" << std::endl;
-        return;
-    }
-    
-    if (name.empty()) {
-        std::cout << "Please enter a valid name!" << std::endl;
-        promptForPlayerName(); // Try again
-        return;
-    }
-    
-    // Clean up the name (remove extra whitespace, limit length)
-    if (name.length() > 20) {
-        name = name.substr(0, 20);
-        std::cout << "Name truncated to: " << name << std::endl;
-    }
-    
-    setPlayerName(name);
-    std::cout << "🌟 Nice to meet you, " << playerName << "! Let's begin your adventure!" << std::endl;
-}
-
-void Game::setPlayerName(const std::string& name) {
-    playerName = name;
-}
-
-std::string Game::getPlayerName() const {
-    return playerName;
-}
-
-void Game::createPlayer(char raceChar) {
-    delete player; // Clean up existing player if any
-    // Create race-specific player using teammate's charpack1 classes
-    switch (raceChar) {
-        case 's': player = new Shade(this); break;
-        case 'd': player = new Drow(this); break;
-        case 'v': player = new Vampire(this); break;
-        case 'g': player = new Goblin(this); break;
-        case 't': player = new Troll(this); break;
-        default: player = new Shade(this); break; // Default to Shade
-    }
-    
-    std::string message =  " the " + getRaceName() + " has entered the dungeon!";
 }
 
 bool Game::isOver() const {
     return over;
 }
 
-
+void Game::processEnemyTurns() {
+    std::vector<Enemy *> &enemies = currentFloor->getEnemy();
+    for (auto enemy : enemies) {
+        if (enemy->near(player->getPosition())) {
+            enemy->attack(*player);
+        } else if (!enemiesFrozen) {
+            Position pos = enemy->getPosition();
+            std::vector<int> v;
+            for (int i = 1; i <= 8; i++) {
+            if(currentFloor->atPosition(pos+i) == '.') {
+            v.push_back(i);
+            }
+            }
+            if (v.size() != 0) {
+            int index = prng(v.size() - 1);
+            enemy->move(v.at(index));
+            }
+        }
+    }
+    std::sort(enemies.begin(), enemies.end(), [](Enemy* a, Enemy* b) {
+    return *a < *b;
+    });
+}
 
 PlayerCharacter* Game::getPlayer() const {
     return player;
@@ -267,11 +281,10 @@ bool Game::areEnemiesFrozen() const {
 
 void Game::toggleEnemyFreeze() {
     enemiesFrozen = !enemiesFrozen;
-    std::string message = "❄️  " + playerName + " " + (enemiesFrozen ? "freezes" : "unfreezes") + " all enemies!";
-    if (observer) {
-        observer->displayMessage(message);
+    if (enemiesFrozen) {
+        updateMessage("they are frozen!");
     } else {
-        std::cout << message << std::endl;
+        updateMessage("unfrozen! watch out!");
     }
 }
 
@@ -292,54 +305,11 @@ bool Game::isValidDirection(const std::string& dir) {
     return 1 <= directionToInt(dir) && directionToInt(dir) <= 8;
 }
 
-void Game::displayHelp() {
-    if (observer) {
-        observer->displayMessage("🎮 ChamberCrawler3000 Help:");
-        observer->displayMessage("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-        observer->displayMessage("📍 Movement: nw, no, ne, we, ea, sw, so, se");
-        observer->displayMessage("⚔️  Attack: 'a <direction>' (e.g., 'a nw' to attack northwest)");
-        observer->displayMessage("🧪 Use Potion: 'u <direction>' (e.g., 'u so' to use potion to the south)");
-        observer->displayMessage("❄️  Freeze Enemies: 'f' (cheat mode)");
-        observer->displayMessage("🔄 Restart Game: 'r'");
-        observer->displayMessage("ℹ️  Floor Info: 'info'");
-        observer->displayMessage("💾 Save Game: 'save' (coming soon)");
-        observer->displayMessage("❓ Help: 'h' or 'help'");
-        observer->displayMessage("🚪 Quit: 'q'");
-        observer->displayMessage("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    } else {
-        std::cout << "🎮 ChamberCrawler3000 Help:" << std::endl;
-        std::cout << "Movement: nw, no, ne, we, ea, sw, so, se" << std::endl;
-        std::cout << "Attack: 'a <direction>', Use Potion: 'u <direction>'" << std::endl;
-        std::cout << "Special: 'f' freeze, 'r' restart, 'q' quit, 'info' floor info" << std::endl;
+void Game::printEnemies() {
+    std::vector<Enemy *> &enemies = currentFloor->getEnemy();
+    for (auto enemy : enemies) {
+        std::cout << "Enemy at " << enemy->getPosition().x << enemy->getPosition().y << " HP: " << enemy->getHP() 
+                  << " ATK: " << enemy->getAtk() << " DEF: " << enemy->getDef() 
+                  << std::endl;
     }
 }
-
-void Game::displayFloorInfo() {
-    if (!currentFloor) {
-        if (observer) {
-            observer->displayMessage("❌ No floor loaded!");
-        }
-        return;
-    }
-    
-    // Count entities
-    int enemyCount = currentFloor->getEnemies().size();
-    int itemCount = currentFloor->getItems().size();
-    
-    if (observer) {
-        observer->displayMessage("🏰 Floor " + std::to_string(floorNum) + " Information:");
-        observer->displayMessage("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-        observer->displayMessage("📏 Dimensions: " + std::to_string(currentFloor->getWidth()) + " x " + std::to_string(currentFloor->getHeight()));
-        observer->displayMessage("👹 Enemies: " + std::to_string(enemyCount));
-        observer->displayMessage("💎 Items: " + std::to_string(itemCount));
-        observer->displayMessage("🪜 Stairs: " + std::to_string(currentFloor->getStairPosition().x) + ", " + std::to_string(currentFloor->getStairPosition().y));
-        observer->displayMessage("❄️  Enemies Frozen: " + (enemiesFrozen ? "Yes" : "No"));
-        if (!floorFile.empty()) {
-            observer->displayMessage("📁 Loaded from: " + floorFile);
-        } else {
-            observer->displayMessage("🎲 Generated randomly");
-        }
-        observer->displayMessage("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    }
-}
-
