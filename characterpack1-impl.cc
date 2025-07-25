@@ -1,17 +1,24 @@
 module charpack1;
+import <stdexcept>;
+import prng;
 
 PRNG prng;
+bool MERCHANT_IS_HOSTILE = false;
 
-Drow::Drow(Game *theGame):  pos{0, 0}, hp{150}, maxHp{150}, atk{20}, def{15}, theGame{theGame}, race{'d'} {}
+Drow::Drow(Observer *theGame): PlayerCharacter{{0, 0}, 150, 20, 15, 'd', theGame} {}
 
 void Drow::useItem(Item &used) {
-    gold += used.getValue();
     used *= 1.5;
     used.use();
 }
 
-Vampire::Vampire(): pos{0, 0}, hp{50}, maxHp{0}, atk{25}, def{25}, theGame{theGame}, race{'v'} {}
+Vampire::Vampire(Observer *theGame): PlayerCharacter{{0, 0}, 50, 25, 25, 'v', theGame} {}
 void Vampire::attack(Character &onWho) {
+if(!onWho.getPosition()) {
+//        theGame->updateMessage("attacked nobody!");
+//        return;
+        throw (0);
+    }
 if (onWho.attacked(*this) != 0) {
     heal(5);
 }
@@ -21,29 +28,29 @@ void Vampire::heal(int n) {
     hp += n;
 }
 
-Troll::Troll(Game *theGame): pos{0, 0}, hp{120}, maxHp{120}, atk{25}, def{15}, theGame{theGame}, race{'t'} {}
+Troll::Troll(Observer *theGame): PlayerCharacter{{0, 0}, 120, 25, 15, 't', theGame} {}
 
 void Troll::move(int direction) {
     PlayerCharacter::move(direction);
     heal(5);
 }
 
-Goblin::Goblin(Game *theGame): pos{0, 0}, hp{110}, maxHp{110}, atk{15}, def{20}, theGame{theGame}, race{'g'} {}
+Goblin::Goblin(Observer *theGame): PlayerCharacter{{0, 0}, 110, 15, 20, 'g', theGame} {}
 
-void Goblin::attack() {
+void Goblin::attack(Character &onWho) {
+    if(!onWho.getPosition()) {
+//        theGame->updateMessage("attacked nobody!");
+//        return;
+        throw (0);
+    }
 if (onWho.attacked(*this) == -1) {
     gold += 5;
 }   
 }
 
-Human::Human(Floor *theFloor): pos{0, 0}, hp{140}, atk{20}, def{20}, theChamber{theChamber}, race{'H'} {}
+Human::Human(Observer *theFloor): Enemy{{0, 0}, 140, 20, 20, 'H', theFloor} {}
 
-void Human::death() {
-    theFloor->award(4);
-    theChamber->removeEnemy(this);
-}
-
-Dwarf::Dwarf(Floor *theFloor): pos{0, 0}, hp{100}, atk{20}, def{30}, theChamber{theChamber}, race{'W'} {}
+Dwarf::Dwarf(Observer *theFloor): Enemy{{0, 0}, 100, 20, 30, 'W', theFloor} {}
 
 int Dwarf::attacked(Character &byWho) {
     if (byWho.getRace() == 'v') {
@@ -52,7 +59,7 @@ int Dwarf::attacked(Character &byWho) {
     return Character::attacked(byWho);
 }
 
-Elf::Elf(Floor *theFloor): pos{0, 0}, hp{140}, atk{30}, def{10}, theChamber{theChamber}, race{'E'} {}
+Elf::Elf(Observer *theFloor): Enemy{{0, 0}, 140, 30, 10, 'E', theFloor} {}
 
 void Elf::attack(Character &onWho) {
     Character::attack(onWho);
@@ -61,7 +68,7 @@ void Elf::attack(Character &onWho) {
     }
 }
 
-Orc::Orc(Floor *theFloor): pos{0, 0}, hp{180}, atk{30}, def{25}, theChamber{theChamber}, race{'O'} {}
+Orc::Orc(Observer *theFloor): Enemy{{0, 0}, 180, 30, 25, 'O', theFloor} {}
 void Orc::attack(Character &onWho) {
     if (onWho.getRace() == 'g') {
         atk += (atk/2);
@@ -70,10 +77,10 @@ void Orc::attack(Character &onWho) {
     atk = 30;
 }
 
-Merchant::Merchant(Floor *theFloor): pos{0, 0}, hp{30}, atk{70}, def{5}, theChamber{theChamber}, race{'M'} {}
+Merchant::Merchant(Observer *theFloor): Enemy{{0, 0}, 30, 70, 5, 'M', theFloor} {}
 
 void Merchant::attack(Character &onWho) {
-    if (isHostile == true) {
+    if (MERCHANT_IS_HOSTILE == true) {
         Character::attack(onWho);
     } else if (sold == false) {
         sell();
@@ -82,22 +89,20 @@ void Merchant::attack(Character &onWho) {
 }
 
 int Merchant::attacked(Character &byWho) {
-    isHostile = true;
+    MERCHANT_IS_HOSTILE = true;
     return Character::attacked(byWho);
 }
 
-void Merchant::death() {
-    theChamber->genGold(pos, 4);
-    theChamber->removeEnemy(this);
-}
+Dragon::Dragon(Observer *theFloor, Position treasure):Enemy{{0, 0}, 150, 20, 20, 'D', theFloor}, treasure{treasure} {}
+bool Dragon::near(Position p) {return pos.near(p) || treasure.near(p);}
 
-Dragon::Dragon(Floor *theFloor, Observer *treasure): treasure{treasure}, pos{0, 0}, hp{150}, atk{20}, def{20}, theChamber{theChamber}, race{'D'} {}
+void Dragon::move(int direction) {}
 
 void Dragon::death() {
-    treasure->notify();
+    observer->notify(pos, {0, 0}, 1);
 }
 
-Halfling::Halfling(Floor *theFloor): pos{0, 0}, hp{100}, atk{15}, def{20}, theChamber{theChamber}, race{'L'} {}
+Halfling::Halfling(Observer *theFloor): Enemy{{0, 0}, 100, 15, 20, 'L', theFloor} {}
 int Halfling::attacked(Character &byWho) {
     if (prng(1) == 0) {
         return 0;

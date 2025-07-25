@@ -9,7 +9,8 @@ export struct Position {
     Position moveY (int y);
     std::strong_ordering operator<=>(Position &other);
     Position &operator+=(int n);
-    Position &operator+(int n);
+    Position operator+(int n);
+    bool operator==(Position &other) const;
     bool near(const Position &other) const;
-    double distanceTo(const Position &other) const;
+    bool operator!() const;
 };
